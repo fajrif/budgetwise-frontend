@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { projectsAPI, budgetItemsAPI, transactionsAPI } from '../api/endpoints';
+import { api } from '../api/axios';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { Plus, Search } from 'lucide-react';
-import ProjectCard from '../components/ProjectCard';
-import ProjectForm from '../components/ProjectForm';
+import ProjectCard from '../components/projects/ProjectCard';
+import ProjectForm from '../components/projects/ProjectForm';
 
 const Projects = () => {
   const [searchTerm, setSearchTerm] = useState('');
@@ -14,46 +14,52 @@ const Projects = () => {
   const [editingProject, setEditingProject] = useState(null);
   const queryClient = useQueryClient();
 
-  const { data: projectsData = [], isLoading } = useQuery({
+  const { data: projectsData = { projects: [] }, isLoading } = useQuery({
     queryKey: ['projects'],
     queryFn: async () => {
-      const response = await projectsAPI.getAll();
+      const response = await api.get('/projects');
       return response.data;
-    },
+    }
   });
 
-  const { data: budgetItemsData = [] } = useQuery({
+  const { data: budgetData = { budget_items: [] } } = useQuery({
     queryKey: ['budgetItems'],
     queryFn: async () => {
-      const response = await budgetItemsAPI.getAll();
+      const response = await api.get('/budget-items');
       return response.data;
-    },
+    }
   });
 
-  const { data: transactionsData = [] } = useQuery({
+  const { data: transactionsData = { transactions: [] } } = useQuery({
     queryKey: ['transactions'],
     queryFn: async () => {
-      const response = await transactionsAPI.getAll();
+      const response = await api.get('/transactions');
       return response.data;
-    },
+    }
   });
 
   const createMutation = useMutation({
-    mutationFn: (data) => projectsAPI.create(data),
+    mutationFn: async (data) => {
+      const response = await api.post('/projects', data);
+      return response.data;
+    },
     onSuccess: () => {
       queryClient.invalidateQueries(['projects']);
       setShowForm(false);
       setEditingProject(null);
-    },
+    }
   });
 
   const updateMutation = useMutation({
-    mutationFn: ({ id, data }) => projectsAPI.update(id, data),
+    mutationFn: async ({ id, data }) => {
+      const response = await api.put(`/projects/${id}`, data);
+      return response.data;
+    },
     onSuccess: () => {
       queryClient.invalidateQueries(['projects']);
       setShowForm(false);
       setEditingProject(null);
-    },
+    }
   });
 
   const handleSubmit = (data) => {
@@ -64,33 +70,43 @@ const Projects = () => {
     }
   };
 
-  const filteredProjects = projectsData.filter(
-    (project) =>
-      project.judul_pekerjaan?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      project.no_sp2k?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      project.client?.toLowerCase().includes(searchTerm.toLowerCase())
+  const handleEdit = (project) => {
+    setEditingProject(project);
+    setShowForm(true);
+  };
+
+  const filteredProjects = projectsData.projects.filter(project =>
+    project.judul_pekerjaan?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    project.no_sp2k?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    project.client?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   return (
-    <div className="p-4 md:p-8">
+    <div className="p-4 md:p-8 bg-gradient-to-br from-slate-50 to-slate-100 min-h-screen">
       <div className="max-w-7xl mx-auto space-y-6">
-        <div className="flex justify-between items-center">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
           <div>
-            <h1 className="text-3xl font-bold">Manajemen Proyek</h1>
+            <h1 className="text-3xl font-bold text-slate-900">Manajemen Proyek</h1>
             <p className="text-slate-500 mt-1">Kelola semua data proyek dan kontrak</p>
           </div>
-          <Button onClick={() => setShowForm(true)} className="bg-blue-600 hover:bg-blue-700">
+          <Button 
+            onClick={() => {
+              setEditingProject(null);
+              setShowForm(true);
+            }}
+            className="bg-blue-600 hover:bg-blue-700"
+          >
             <Plus className="w-4 h-4 mr-2" />
             Tambah Proyek
           </Button>
         </div>
 
-        <Card>
+        <Card className="border-none shadow-lg">
           <CardContent className="pt-6">
             <div className="relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 w-5 h-5" />
               <Input
-                placeholder="Cari proyek..."
+                placeholder="Cari proyek berdasarkan nama, SP2K, atau client..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="pl-10"
@@ -113,22 +129,23 @@ const Projects = () => {
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {isLoading ? (
-            <div>Loading...</div>
+            Array(6).fill(0).map((_, i) => (
+              <Card key={i} className="h-64 animate-pulse bg-slate-200" />
+            ))
           ) : filteredProjects.length === 0 ? (
-            <div className="col-span-full text-center py-12 text-slate-500">
-              Belum ada proyek
+            <div className="col-span-full text-center py-12">
+              <p className="text-slate-500">
+                {searchTerm ? 'Tidak ada proyek yang sesuai dengan pencarian.' : 'Belum ada proyek. Tambahkan proyek pertama Anda.'}
+              </p>
             </div>
           ) : (
             filteredProjects.map((project) => (
               <ProjectCard
                 key={project.id}
                 project={project}
-                budgetItems={budgetItemsData}
-                transactions={transactionsData}
-                onEdit={(p) => {
-                  setEditingProject(p);
-                  setShowForm(true);
-                }}
+                budgetItems={budgetData.budget_items}
+                transactions={transactionsData.transactions}
+                onEdit={handleEdit}
               />
             ))
           )}

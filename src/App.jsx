@@ -2,8 +2,8 @@ import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { AuthProvider } from './context/AuthContext';
-import ProtectedRoute from './components/ProtectedRoute';
-import Layout from './components/Layout';
+
+// Pages
 import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
 import Projects from './pages/Projects';
@@ -12,12 +12,15 @@ import Transactions from './pages/Transactions';
 import MasterData from './pages/MasterData';
 import ManagementFee from './pages/ManagementFee';
 
+// Layout
+import Layout from './components/Layout';
+import ProtectedRoute from './components/ProtectedRoute';
+
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
       refetchOnWindowFocus: false,
       retry: 1,
-      staleTime: 5 * 60 * 1000,
     },
   },
 });
@@ -29,30 +32,64 @@ function App() {
         <BrowserRouter>
           <Routes>
             <Route path="/login" element={<Login />} />
-            <Route
-              path="/"
-              element={
-                <ProtectedRoute>
-                  <Layout />
-                </ProtectedRoute>
-              }
-            >
-              <Route index element={<Navigate to="/dashboard" replace />} />
-              <Route path="dashboard" element={<Dashboard />} />
-              <Route path="projects" element={<Projects />} />
-              <Route path="projects/:id" element={<ProjectDetail />} />
-              <Route path="transactions" element={<Transactions />} />
-              <Route path="master-data" element={<MasterData />} />
-              <Route
-                path="management-fee"
-                element={
-                  <ProtectedRoute adminOnly>
-                    <ManagementFee />
-                  </ProtectedRoute>
-                }
-              />
-            </Route>
-            <Route path="*" element={<Navigate to="/dashboard" replace />} />
+
+            <Route path="/" element={
+              <ProtectedRoute>
+                <Layout>
+                  <Dashboard />
+                </Layout>
+              </ProtectedRoute>
+            } />
+
+            <Route path="/dashboard" element={
+              <ProtectedRoute>
+                <Layout>
+                  <Dashboard />
+                </Layout>
+              </ProtectedRoute>
+            } />
+
+            <Route path="/projects" element={
+              <ProtectedRoute>
+                <Layout>
+                  <Projects />
+                </Layout>
+              </ProtectedRoute>
+            } />
+
+            <Route path="/projects/:id" element={
+              <ProtectedRoute>
+                <Layout>
+                  <ProjectDetail />
+                </Layout>
+              </ProtectedRoute>
+            } />
+
+            <Route path="/transactions" element={
+              <ProtectedRoute>
+                <Layout>
+                  <Transactions />
+                </Layout>
+              </ProtectedRoute>
+            } />
+
+            <Route path="/master-data" element={
+              <ProtectedRoute adminOnly>
+                <Layout>
+                  <MasterData />
+                </Layout>
+              </ProtectedRoute>
+            } />
+
+            <Route path="/management-fee" element={
+              <ProtectedRoute adminOnly>
+                <Layout>
+                  <ManagementFee />
+                </Layout>
+              </ProtectedRoute>
+            } />
+
+            <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </BrowserRouter>
       </AuthProvider>

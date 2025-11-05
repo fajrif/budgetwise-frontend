@@ -2,7 +2,7 @@ import axios from 'axios';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080/api';
 
-const axiosInstance = axios.create({
+const api = axios.create({
   baseURL: API_BASE_URL,
   headers: {
     'Content-Type': 'application/json',
@@ -10,7 +10,7 @@ const axiosInstance = axios.create({
 });
 
 // Request interceptor untuk menambahkan token
-axiosInstance.interceptors.request.use(
+api.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem('token');
     if (token) {
@@ -24,7 +24,7 @@ axiosInstance.interceptors.request.use(
 );
 
 // Response interceptor untuk handle errors
-axiosInstance.interceptors.response.use(
+api.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response?.status === 401) {
@@ -36,4 +36,5 @@ axiosInstance.interceptors.response.use(
   }
 );
 
-export default axiosInstance;
+export { api }; // Named export
+export default api; // Default export juga tersedia
