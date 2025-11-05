@@ -1,8 +1,8 @@
 import * as React from "react"
-import { cn } from "@/lib/utils"
 import { X } from "lucide-react"
+import { cn } from "@/lib/utils"
 
-const Dialog = ({ open, onOpenChange, children }) => {
+const Dialog = ({ children, open, onOpenChange }) => {
   React.useEffect(() => {
     if (open) {
       document.body.style.overflow = 'hidden'
@@ -18,8 +18,11 @@ const Dialog = ({ open, onOpenChange, children }) => {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
-      <div className="fixed inset-0 bg-black/50" onClick={() => onOpenChange(false)} />
-      <div className="relative z-50">{children}</div>
+      <div 
+        className="fixed inset-0 bg-black/50" 
+        onClick={() => onOpenChange(false)}
+      />
+      {children}
     </div>
   )
 }
@@ -39,16 +42,44 @@ const DialogContent = React.forwardRef(({ className, children, ...props }, ref) 
 DialogContent.displayName = "DialogContent"
 
 const DialogHeader = ({ className, ...props }) => (
-  <div className={cn("flex flex-col space-y-1.5 text-center sm:text-left", className)} {...props} />
+  <div
+    className={cn("flex flex-col space-y-1.5 text-center sm:text-left", className)}
+    {...props}
+  />
 )
+DialogHeader.displayName = "DialogHeader"
+
+const DialogFooter = ({ className, ...props }) => (
+  <div
+    className={cn("flex flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2", className)}
+    {...props}
+  />
+)
+DialogFooter.displayName = "DialogFooter"
 
 const DialogTitle = React.forwardRef(({ className, ...props }, ref) => (
-  <h2 ref__={ref} className={cn("text-lg font-semibold leading-none tracking-tight", className)} {...props} />
+  <h2
+    ref__={ref}
+    className={cn("text-lg font-semibold leading-none tracking-tight", className)}
+    {...props}
+  />
 ))
 DialogTitle.displayName = "DialogTitle"
 
-const DialogFooter = ({ className, ...props }) => (
-  <div className={cn("flex flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2", className)} {...props} />
-)
+const DialogDescription = React.forwardRef(({ className, ...props }, ref) => (
+  <p
+    ref__={ref}
+    className={cn("text-sm text-muted-foreground", className)}
+    {...props}
+  />
+))
+DialogDescription.displayName = "DialogDescription"
 
-export { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter }
+export {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogFooter,
+  DialogTitle,
+  DialogDescription,
+}

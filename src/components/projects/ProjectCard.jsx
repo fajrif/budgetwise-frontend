@@ -1,23 +1,30 @@
 import React from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
-import { Badge } from './ui/badge';
-import { Button } from './ui/button';
-import { Progress } from './ui/progress';
+import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
+import { Badge } from '../ui/badge';
+import { Button } from '../ui/button';
+import { Progress } from '../ui/progress';
 import { Building2, Calendar, DollarSign, ExternalLink, Pencil } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { format } from 'date-fns';
-import { formatRupiah } from './shared/formatters';
 
-const ProjectCard = ({ project, budgetItems, transactions, onEdit }) => {
+const ProjectCard = ({ project, budgetData, transactionData, onEdit }) => {
   const navigate = useNavigate();
 
-  const projectBudgetItems = budgetItems.filter((b) => b.project_id === project.id);
+  const formatRupiah = (amount) => {
+    return new Intl.NumberFormat('id-ID', {
+      style: 'currency',
+      currency: 'IDR',
+      minimumFractionDigits: 0
+    }).format(amount);
+  };
+
+  const projectBudgetItems = budgetData.filter(b => b.project_id === project.id);
   const budget = projectBudgetItems
-    .filter((b) => b.is_parent || !b.parent_budget_id)
+    .filter(b => b.is_parent || !b.parent_budget_id)
     .reduce((sum, b) => sum + (b.total_anggaran || b.jumlah_anggaran || 0), 0);
 
-  const actual = transactions
-    .filter((t) => t.project_id === project.id)
+  const actual = transactionData
+    .filter(t => t.project_id === project.id)
     .reduce((sum, t) => sum + (t.jumlah_realisasi || 0), 0);
 
   const percentage = budget > 0 ? (actual / budget) * 100 : 0;

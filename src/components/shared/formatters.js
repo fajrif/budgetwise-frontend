@@ -1,3 +1,5 @@
+// Utility functions for formatting data
+
 export const formatRupiah = (amount) => {
   if (amount === null || amount === undefined) return 'Rp 0';
 
@@ -11,21 +13,44 @@ export const formatRupiah = (amount) => {
   }).format(numberAmount);
 };
 
+export const formatRupiahShort = (amount) => {
+  if (amount === null || amount === undefined) return 'Rp 0';
+
+  const numberAmount = typeof amount === 'string' ? parseFloat(amount) : amount;
+
+  if (numberAmount >= 1000000000) {
+    return `Rp ${(numberAmount / 1000000000).toFixed(1)}M`;
+  } else if (numberAmount >= 1000000) {
+    return `Rp ${(numberAmount / 1000000).toFixed(1)}Jt`;
+  } else if (numberAmount >= 1000) {
+    return `Rp ${(numberAmount / 1000).toFixed(1)}Rb`;
+  }
+
+  return formatRupiah(numberAmount);
+};
+
+export const formatNumber = (num) => {
+  if (num === null || num === undefined) return '0';
+  return new Intl.NumberFormat('id-ID').format(num);
+};
+
 export const calculateSLAStatus = (tanggalPO, tanggalTransaksi) => {
   if (!tanggalPO || !tanggalTransaksi) return 'unknown';
 
   const po = new Date(tanggalPO);
   const tx = new Date(tanggalTransaksi);
 
+  // Get end of month for PO date
   const endOfPOMonth = new Date(po.getFullYear(), po.getMonth() + 1, 0);
+  // Get end of next month
   const endOfNextMonth = new Date(po.getFullYear(), po.getMonth() + 2, 0);
 
   if (tx <= endOfPOMonth) {
-    return 'ontime';
+    return 'ontime'; // Dibayar di bulan yang sama
   } else if (tx <= endOfNextMonth) {
-    return 'h+1';
+    return 'h+1'; // Dibayar di H+1 (bulan berikutnya)
   } else {
-    return 'late';
+    return 'late'; // Terlambat
   }
 };
 
