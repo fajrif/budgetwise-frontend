@@ -8,7 +8,7 @@ import { Plus, Wallet, TrendingUp, AlertCircle, FolderKanban } from 'lucide-reac
 import { formatRupiah } from '../components/shared/formatters';
 
 const Dashboard = () => {
-  const { data: projectsData = [] } = useQuery({
+  const { data: projectsData = { projects: [] } } = useQuery({
     queryKey: ['projects'],
     queryFn: async () => {
       const response = await projectsAPI.getAll();
@@ -16,15 +16,16 @@ const Dashboard = () => {
     },
   });
 
-  const { data: budgetItemsData = [] } = useQuery({
+  const { data: budgetItemsData = { budget_items: [] } } = useQuery({
     queryKey: ['budgetItems'],
     queryFn: async () => {
       const response = await budgetItemsAPI.getAll();
+      console.log('Response data:', response.data);
       return response.data;
     },
   });
 
-  const { data: transactionsData = [] } = useQuery({
+  const { data: transactionsData = { transactions: [] } } = useQuery({
     queryKey: ['transactions'],
     queryFn: async () => {
       const response = await transactionsAPI.getAll();
@@ -33,26 +34,26 @@ const Dashboard = () => {
   });
 
   const calculateMetrics = () => {
-    const totalBudget = budgetItemsData
+    const totalBudget = budgetItemsData.budget_items
       .filter(b => b.is_parent || !b.parent_budget_id)
       .reduce((sum, item) => sum + (item.total_anggaran || item.jumlah_anggaran || 0), 0);
-    
-    const totalActual = transactionsData.reduce((sum, tx) => sum + (tx.jumlah_realisasi || 0), 0);
+
+    const totalActual = transactionsData.transactions.reduce((sum, tx) => sum + (tx.jumlah_realisasi || 0), 0);
     const remaining = totalBudget - totalActual;
     const percentage = totalBudget > 0 ? (totalActual / totalBudget) * 100 : 0;
 
-    const activeProjects = projectsData.filter(p => p.status_kontrak === 'Active').length;
-    
-    const alertProjects = projectsData.filter(project => {
-      const projectBudgetItems = budgetItemsData.filter(b => b.project_id === project.id);
+    const activeProjects = projectsData.projects.filter(p => p.status_kontrak === 'Active').length;
+
+    const alertProjects = projectsData.projects.filter(project => {
+      const projectBudgetItems = budgetItemsData.budget_items.filter(b => b.project_id === project.id);
       const projectBudget = projectBudgetItems
         .filter(b => b.is_parent || !b.parent_budget_id)
         .reduce((sum, b) => sum + (b.total_anggaran || b.jumlah_anggaran || 0), 0);
-      
-      const projectActual = transactionsData
+
+      const projectActual = transactionsData.transactions
         .filter(t => t.project_id === project.id)
         .reduce((sum, t) => sum + (t.jumlah_realisasi || 0), 0);
-      
+
       return projectBudget > 0 && (projectActual / projectBudget) > 0.8;
     });
 
@@ -62,7 +63,7 @@ const Dashboard = () => {
       remaining,
       percentage,
       activeProjects,
-      totalProjects: projectsData.length,
+      totalProjects: projectsData.projects.length,
       alertCount: alertProjects.length,
     };
   };

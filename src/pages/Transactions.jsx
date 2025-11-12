@@ -168,14 +168,14 @@ const Transactions = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    
+
     const selectedProject = projectsData.projects.find(p => p.id === formData.project_id);
     const selectedCostType = costTypesData.cost_types.find(ct => ct.id === formData.cost_type_id);
-    
+
     const jumlahRealisasi = parseFloat(formData.jumlah_realisasi);
     const tarifManFee = selectedProject?.tarif_management_fee_persen || 0;
     const nilaiManFee = (tarifManFee / 100) * jumlahRealisasi;
-    
+
     const data = {
       project_id: formData.project_id,
       no_sp2k: selectedProject?.no_sp2k || '',
@@ -205,10 +205,10 @@ const Transactions = () => {
       tx.jenis_biaya_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       project?.judul_pekerjaan?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       project?.no_sp2k?.toLowerCase().includes(searchTerm.toLowerCase());
-    
+
     const matchProject = filterProject === "all" || tx.project_id === filterProject;
     const matchCostType = filterCostType === "all" || tx.cost_type_id === filterCostType;
-    
+
     return matchSearch && matchProject && matchCostType;
   });
 
@@ -277,7 +277,6 @@ const Transactions = () => {
                 className="pl-10"
               />
             </div>
-            
             <div className="flex gap-4 flex-wrap">
               <div className="flex-1 min-w-[200px]">
                 <Label className="text-sm text-slate-600 mb-2 flex items-center gap-2">
@@ -353,7 +352,7 @@ const Transactions = () => {
                     {filteredTransactions.map((tx) => {
                       const project = projectsData.projects.find(p => p.id === tx.project_id);
                       const slaStatus = calculateSLAStatus(tx.tanggal_po_tagihan, tx.tanggal_transaksi);
-                      
+
                       return (
                         <TableRow key={tx.id}>
                           <TableCell>
@@ -526,8 +525,8 @@ const Transactions = () => {
               <Button type="button" variant="outline" onClick={() => setShowDialog(false)}>
                 Batal
               </Button>
-              <Button 
-                type="submit" 
+              <Button
+                type="submit"
                 disabled={createMutation.isPending || updateMutation.isPending}
                 className="bg-green-600 hover:bg-green-700"
               >
