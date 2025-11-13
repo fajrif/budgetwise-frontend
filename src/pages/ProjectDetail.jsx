@@ -1,14 +1,15 @@
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { api } from '../api/axios';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
 import { Button } from '../components/ui/button';
 import { Badge } from '../components/ui/badge';
 import { Progress } from '../components/ui/progress';
-import { ArrowLeft, Building2, Calendar, DollarSign } from 'lucide-react';
+import { ArrowLeft, Building2, Calendar } from 'lucide-react';
 import { format } from 'date-fns';
 import { id } from 'date-fns/locale';
+import { getStatusColor } from '@/utils/ProjectHelper';
 
 const formatRupiah = (amount) => {
   return new Intl.NumberFormat('id-ID', {
@@ -20,8 +21,7 @@ const formatRupiah = (amount) => {
 
 const ProjectDetail = () => {
   const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
-  const projectId = searchParams.get('id');
+  const { projectId } = useParams();
   const queryClient = useQueryClient();
 
   const { data: projectsData, isLoading } = useQuery({
@@ -58,7 +58,7 @@ const ProjectDetail = () => {
   }
 
   const project = projectsData?.project;
-  
+
   if (!project) {
     return (
       <div className="p-8 text-center">
@@ -77,18 +77,16 @@ const ProjectDetail = () => {
 
   return (
     <div className="p-4 md:p-8 bg-gradient-to-br from-slate-50 to-slate-100 min-h-screen">
-      <div className="max-w-7xl mx-auto space-y-6">
+      <div className="max-w-7xl mx-auto space-y-4">
         <div className="flex items-center gap-4">
           <Button variant="outline" size="icon" onClick={() => navigate('/projects')}>
             <ArrowLeft className="w-4 h-4" />
           </Button>
           <div>
-            <h1 className="text-3xl font-bold text-slate-900">{project.judul_pekerjaan}</h1>
+            <h1 className="text-xl font-bold text-slate-900">{project.judul_pekerjaan}</h1>
             <p className="text-slate-500">SP2K: {project.no_sp2k}</p>
           </div>
-          <Badge variant="outline" className="ml-auto">
-            {project.status_kontrak}
-          </Badge>
+          <Badge className={`${getStatusColor(project.status_kontrak)} text-sm py-2 px-4 ml-auto`}>{project.status_kontrak}</Badge>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
@@ -132,42 +130,41 @@ const ProjectDetail = () => {
 
         <Card>
           <CardHeader>
-            <CardTitle>Informasi Proyek</CardTitle>
+            <CardTitle className="text-xl">Informasi Proyek</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               <div>
                 <p className="text-sm text-slate-500">Client</p>
-                <p className="font-semibold flex items-center gap-2">
+                <p className="font-medium flex items-center gap-2">
                   <Building2 className="w-4 h-4" />
                   {project.client || '-'}
                 </p>
               </div>
               <div>
                 <p className="text-sm text-slate-500">PIC Client</p>
-                <p className="font-semibold">{project.pic_client || '-'}</p>
+                <p className="font-medium">{project.pic_client || '-'}</p>
               </div>
               <div>
                 <p className="text-sm text-slate-500">Tanggal Mulai</p>
-                <p className="font-semibold flex items-center gap-2">
+                <p className="font-medium flex items-center gap-2">
                   <Calendar className="w-4 h-4" />
                   {project.tanggal_mulai && format(new Date(project.tanggal_mulai), 'dd MMM yyyy', { locale: id })}
                 </p>
               </div>
               <div>
                 <p className="text-sm text-slate-500">Jangka Waktu</p>
-                <p className="font-semibold">{project.jangka_waktu || 0} Bulan</p>
+                <p className="font-medium">{project.jangka_waktu || 0} Bulan</p>
               </div>
               <div>
                 <p className="text-sm text-slate-500">Nilai Pekerjaan</p>
-                <p className="font-semibold flex items-center gap-2">
-                  <DollarSign className="w-4 h-4" />
+                <p className="font-medium flex items-center gap-2">
                   {formatRupiah(project.nilai_pekerjaan)}
                 </p>
               </div>
               <div>
                 <p className="text-sm text-slate-500">Jenis Kontrak</p>
-                <p className="font-semibold">{project.jenis_kontrak}</p>
+                <p className="font-medium">{project.jenis_kontrak}</p>
               </div>
             </div>
           </CardContent>

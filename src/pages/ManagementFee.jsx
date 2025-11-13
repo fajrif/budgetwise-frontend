@@ -101,13 +101,13 @@ const ManagementFee = () => {
 
   return (
     <div className="p-4 md:p-8 bg-gradient-to-br from-slate-50 to-slate-100 min-h-screen">
-      <div className="max-w-7xl mx-auto space-y-6">
+      <div className="max-w-7xl mx-auto space-y-4">
         <div className="flex items-center gap-4">
           <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl flex items-center justify-center shadow-lg">
             <Calculator className="w-6 h-6 text-white" />
           </div>
           <div>
-            <h1 className="text-3xl font-bold text-slate-900">Management Fee</h1>
+            <h1 className="text-2xl font-bold text-slate-900">Management Fee</h1>
             <p className="text-slate-500 mt-1">Perhitungan internal management fee per proyek</p>
           </div>
           <div className="ml-auto flex items-center gap-2 text-orange-600">
@@ -129,7 +129,7 @@ const ManagementFee = () => {
               <CardTitle className="text-sm font-medium text-purple-700">Total Management Fee</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-3xl font-bold text-purple-900">
+              <div className="text-2xl font-bold text-purple-900">
                 {formatRupiah(totalManFee)}
               </div>
             </CardContent>
@@ -140,7 +140,7 @@ const ManagementFee = () => {
               <CardTitle className="text-sm font-medium text-green-700">Total Realisasi</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-3xl font-bold text-green-900">
+              <div className="text-2xl font-bold text-green-900">
                 {formatRupiah(totalRealisasi)}
               </div>
             </CardContent>
@@ -151,7 +151,7 @@ const ManagementFee = () => {
               <CardTitle className="text-sm font-medium text-blue-700">Jumlah Proyek</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-3xl font-bold text-blue-900">
+              <div className="text-2xl font-bold text-blue-900">
                 {Object.keys(projectSummary).length}
               </div>
             </CardContent>

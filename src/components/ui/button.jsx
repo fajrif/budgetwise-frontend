@@ -26,7 +26,7 @@ const Button = React.forwardRef(({ className, variant = "default", size = "defau
         sizes[size],
         className
       )}
-      ref__={ref}
+      ref={ref}
       {...props}
     />
   )

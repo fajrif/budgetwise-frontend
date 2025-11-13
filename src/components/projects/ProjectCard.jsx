@@ -3,11 +3,12 @@ import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
 import { Badge } from '../ui/badge';
 import { Button } from '../ui/button';
 import { Progress } from '../ui/progress';
-import { Building2, Calendar, DollarSign, ExternalLink, Pencil } from 'lucide-react';
+import { Building2, Calendar, ExternalLink, Pencil } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { format } from 'date-fns';
+import { getStatusColor } from '@/utils/ProjectHelper';
 
-const ProjectCard = ({ project, budgetData, transactionData, onEdit }) => {
+const ProjectCard = ({ project, budgetItems, transactions, onEdit }) => {
   const navigate = useNavigate();
 
   const formatRupiah = (amount) => {
@@ -18,25 +19,16 @@ const ProjectCard = ({ project, budgetData, transactionData, onEdit }) => {
     }).format(amount);
   };
 
-  const projectBudgetItems = budgetData.filter(b => b.project_id === project.id);
+  const projectBudgetItems = budgetItems.filter(b => b.project_id === project.id);
   const budget = projectBudgetItems
     .filter(b => b.is_parent || !b.parent_budget_id)
     .reduce((sum, b) => sum + (b.total_anggaran || b.jumlah_anggaran || 0), 0);
 
-  const actual = transactionData
+  const actual = transactions
     .filter(t => t.project_id === project.id)
     .reduce((sum, t) => sum + (t.jumlah_realisasi || 0), 0);
 
   const percentage = budget > 0 ? (actual / budget) * 100 : 0;
-
-  const getStatusColor = (status) => {
-    const colors = {
-      Active: 'bg-green-100 text-green-800',
-      Pending: 'bg-yellow-100 text-yellow-800',
-      'Non Aktif': 'bg-slate-100 text-slate-800',
-    };
-    return colors[status] || colors['Non Aktif'];
-  };
 
   return (
     <Card className="hover:shadow-xl transition-all">
@@ -62,7 +54,6 @@ const ProjectCard = ({ project, budgetData, transactionData, onEdit }) => {
             <span>{project.tanggal_mulai ? format(new Date(project.tanggal_mulai), 'dd MMM yyyy') : '-'}</span>
           </div>
           <div className="flex items-center gap-2">
-            <DollarSign className="w-4 h-4" />
             <span>{formatRupiah(project.nilai_pekerjaan)}</span>
           </div>
         </div>

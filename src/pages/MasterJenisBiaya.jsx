@@ -10,7 +10,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '
 import { Plus, Pencil, Trash2, Tag } from 'lucide-react';
 import { Badge } from '../components/ui/badge';
 
-const MasterData = () => {
+const MasterJenisBiaya = () => {
   const queryClient = useQueryClient();
   const [showDialog, setShowDialog] = useState(false);
   const [editingCostType, setEditingCostType] = useState(null);
@@ -95,13 +95,34 @@ const MasterData = () => {
 
   return (
     <div className="p-4 md:p-8 bg-gradient-to-br from-slate-50 to-slate-100 min-h-screen">
-      <div className="max-w-7xl mx-auto space-y-6">
+      <div className="max-w-7xl mx-auto space-y-4">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
           <div>
-            <h1 className="text-3xl font-bold text-slate-900">Master Data</h1>
+            <h1 className="text-2xl font-bold text-slate-900">Master Jenis Biaya</h1>
             <p className="text-slate-500 mt-1">Kelola jenis biaya dan kategori</p>
           </div>
         </div>
+
+        <Card className="border-none shadow-lg bg-gradient-to-br from-blue-50 to-indigo-50">
+          <CardContent className="pt-6">
+            <div className="flex items-start gap-4">
+              <div className="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center flex-shrink-0">
+                <Tag className="w-5 h-5 text-white" />
+              </div>
+              <div>
+                <h3 className="font-semibold text-slate-900 mb-2">Tentang Master Jenis Biaya</h3>
+                <p className="text-sm text-slate-700 mb-3">
+                  Master Jenis Biaya digunakan untuk mengkategorikan anggaran dan transaksi dalam sistem.
+                </p>
+                <div className="space-y-2 text-sm text-slate-600">
+                  <p>• <strong>Kode:</strong> Singkatan untuk identifikasi cepat</p>
+                  <p>• <strong>Nama Biaya:</strong> Nama lengkap jenis biaya</p>
+                  <p>• <strong>Deskripsi:</strong> Penjelasan detail tentang jenis biaya</p>
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
 
         <Card className="border-none shadow-lg">
           <CardHeader className="border-b border-slate-100">
@@ -115,7 +136,7 @@ const MasterData = () => {
               </div>
               <Button
                 onClick={() => handleOpenDialog()}
-                className="bg-blue-600 hover:bg-blue-700"
+                className="bg-blue-900 hover:bg-blue-800"
               >
                 <Plus className="w-4 h-4 mr-2" />
                 Tambah Jenis Biaya
@@ -177,27 +198,6 @@ const MasterData = () => {
             )}
           </CardContent>
         </Card>
-
-        <Card className="border-none shadow-lg bg-gradient-to-br from-blue-50 to-indigo-50">
-          <CardContent className="pt-6">
-            <div className="flex items-start gap-4">
-              <div className="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center flex-shrink-0">
-                <Tag className="w-5 h-5 text-white" />
-              </div>
-              <div>
-                <h3 className="font-semibold text-slate-900 mb-2">Tentang Master Data</h3>
-                <p className="text-sm text-slate-700 mb-3">
-                  Master Jenis Biaya digunakan untuk mengkategorikan anggaran dan transaksi dalam sistem.
-                </p>
-                <div className="space-y-2 text-sm text-slate-600">
-                  <p>• <strong>Kode:</strong> Singkatan untuk identifikasi cepat</p>
-                  <p>• <strong>Nama Biaya:</strong> Nama lengkap jenis biaya</p>
-                  <p>• <strong>Deskripsi:</strong> Penjelasan detail tentang jenis biaya</p>
-                </div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
       </div>
 
       <Dialog open={showDialog} onOpenChange={setShowDialog}>
@@ -240,20 +240,20 @@ const MasterData = () => {
               </div>
             </div>
             <DialogFooter>
-              <Button 
-                type="button" 
-                variant="outline" 
+              <Button
+                type="button"
+                variant="outline"
                 onClick={() => setShowDialog(false)}
               >
                 Batal
               </Button>
-              <Button 
-                type="submit" 
+              <Button
+                type="submit"
                 disabled={createMutation.isPending || updateMutation.isPending}
-                className="bg-blue-600 hover:bg-blue-700"
+                className="bg-blue-900 hover:bg-blue-800"
               >
-                {(createMutation.isPending || updateMutation.isPending) 
-                  ? 'Menyimpan...' 
+                {(createMutation.isPending || updateMutation.isPending)
+                  ? 'Menyimpan...'
                   : editingCostType ? 'Update' : 'Simpan'}
               </Button>
             </DialogFooter>
@@ -264,4 +264,4 @@ const MasterData = () => {
   );
 };
 
-export default MasterData;
+export default MasterJenisBiaya;
