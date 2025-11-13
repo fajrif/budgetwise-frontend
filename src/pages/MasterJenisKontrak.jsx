@@ -10,31 +10,31 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '
 import { Plus, Pencil, Trash2, Tag } from 'lucide-react';
 import { Badge } from '../components/ui/badge';
 
-const MasterJenisBiaya = () => {
+const MasterJenisKontrak = () => {
   const queryClient = useQueryClient();
   const [showDialog, setShowDialog] = useState(false);
-  const [editingCostType, setEditingCostType] = useState(null);
+  const [editingContractType, setEditingContractType] = useState(null);
   const [formData, setFormData] = useState({
-    nama_biaya: '',
-    kode: '',
-    deskripsi: ''
+    name: '',
+    code: '',
+    description: ''
   });
 
-  const { data: costTypesData = { cost_types: [] }, isLoading } = useQuery({
-    queryKey: ['costTypes'],
+  const { data: contractTypesData = { contract_types: [] }, isLoading } = useQuery({
+    queryKey: ['contractTypes'],
     queryFn: async () => {
-      const response = await api.get('/cost-types');
+      const response = await api.get('/contract-types');
       return response.data;
     }
   });
 
   const createMutation = useMutation({
     mutationFn: async (data) => {
-      const response = await api.post('/cost-types', data);
+      const response = await api.post('/contract-types', data);
       return response.data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries(['costTypes']);
+      queryClient.invalidateQueries(['contractTypes']);
       setShowDialog(false);
       resetForm();
     }
@@ -42,11 +42,11 @@ const MasterJenisBiaya = () => {
 
   const updateMutation = useMutation({
     mutationFn: async ({ id, data }) => {
-      const response = await api.put(`/cost-types/${id}`, data);
+      const response = await api.put(`/contract-types/${id}`, data);
       return response.data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries(['costTypes']);
+      queryClient.invalidateQueries(['contractTypes']);
       setShowDialog(false);
       resetForm();
     }
@@ -54,30 +54,30 @@ const MasterJenisBiaya = () => {
 
   const deleteMutation = useMutation({
     mutationFn: async (id) => {
-      await api.delete(`/cost-types/${id}`);
+      await api.delete(`/contract-types/${id}`);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries(['costTypes']);
+      queryClient.invalidateQueries(['contractTypes']);
     }
   });
 
   const resetForm = () => {
     setFormData({
-      nama_biaya: '',
-      kode: '',
-      deskripsi: ''
+      name: '',
+      code: '',
+      description: ''
     });
-    setEditingCostType(null);
+    setEditingContractType(null);
   };
 
-  const handleOpenDialog = (costType = null) => {
-    if (costType) {
+  const handleOpenDialog = (contractType = null) => {
+    if (contractType) {
       setFormData({
-        nama_biaya: costType.nama_biaya || '',
-        kode: costType.kode || '',
-        deskripsi: costType.deskripsi || ''
+        name: contractType.name || '',
+        code: contractType.code || '',
+        description: contractType.description || ''
       });
-      setEditingCostType(costType);
+      setEditingContractType(contractType);
     } else {
       resetForm();
     }
@@ -86,8 +86,8 @@ const MasterJenisBiaya = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (editingCostType) {
-      updateMutation.mutate({ id: editingCostType.id, data: formData });
+    if (editingContractType) {
+      updateMutation.mutate({ id: editingContractType.id, data: formData });
     } else {
       createMutation.mutate(formData);
     }
@@ -98,8 +98,8 @@ const MasterJenisBiaya = () => {
       <div className="max-w-7xl mx-auto space-y-4">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
           <div>
-            <h1 className="text-2xl font-bold text-slate-900">Master Jenis Biaya</h1>
-            <p className="text-slate-500 mt-1">Kelola jenis biaya dan kategori</p>
+            <h1 className="text-2xl font-bold text-slate-900">Master Jenis Kontrak</h1>
+            <p className="text-slate-500 mt-1">Kelola jenis kategori kontrak</p>
           </div>
         </div>
 
@@ -110,14 +110,14 @@ const MasterJenisBiaya = () => {
                 <Tag className="w-5 h-5 text-white" />
               </div>
               <div>
-                <h3 className="font-semibold text-slate-900 mb-2">Tentang Master Jenis Biaya</h3>
+                <h3 className="font-semibold text-slate-900 mb-2">Tentang Master Jenis Kontrak</h3>
                 <p className="text-sm text-slate-700 mb-3">
-                  Master Jenis Biaya digunakan untuk mengkategorikan anggaran dan transaksi dalam sistem.
+                  Master Jenis Kontrak digunakan untuk mengkategorikan proyek.
                 </p>
                 <div className="space-y-1 text-sm text-slate-600">
-                  <p>• <strong className="font-semibold">Nama Biaya:</strong> Nama lengkap jenis biaya</p>
+                  <p>• <strong className="font-semibold">Nama Jenis Kontrak:</strong> Nama lengkap jenis kontrak</p>
                   <p>• <strong className="font-semibold">Kode:</strong> Singkatan untuk identifikasi cepat</p>
-                  <p>• <strong className="font-semibold">Deskripsi:</strong> Penjelasan detail tentang jenis biaya</p>
+                  <p>• <strong className="font-semibold">Deskripsi:</strong> Penjelasan detail tentang jenis kontrak</p>
                 </div>
               </div>
             </div>
@@ -130,45 +130,45 @@ const MasterJenisBiaya = () => {
               <div>
                 <CardTitle className="text-xl font-bold flex items-center gap-2">
                   <Tag className="w-5 h-5 text-blue-600" />
-                  Master Jenis Biaya
+                  Master Jenis Kontrak
                 </CardTitle>
-                <p className="text-sm text-slate-500 mt-1">Daftar jenis biaya untuk anggaran dan transaksi</p>
+                <p className="text-sm text-slate-500 mt-1">Daftar jenis kontrak untuk setiap proyek</p>
               </div>
               <Button
                 onClick={() => handleOpenDialog()}
                 className="bg-blue-900 hover:bg-blue-800"
               >
                 <Plus className="w-4 h-4 mr-2" />
-                Tambah Jenis Biaya
+                Tambah Jenis Kontrak
               </Button>
             </div>
           </CardHeader>
           <CardContent className="pt-6">
             {isLoading ? (
               <div className="text-center py-8">Loading...</div>
-            ) : costTypesData.cost_types.length === 0 ? (
+            ) : contractTypesData.contract_types.length === 0 ? (
               <div className="text-center py-8 text-slate-500">
-                Belum ada jenis biaya. Tambahkan jenis biaya pertama.
+                Belum ada jenis kontrak. Tambahkan jenis kontrak pertama.
               </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {costTypesData.cost_types.map((costType) => (
-                  <Card key={costType.id} className="border-2 border-slate-200 hover:border-blue-300 hover:shadow-md transition-all">
+                {contractTypesData.contract_types.map((contractType) => (
+                  <Card key={contractType.id} className="border-2 border-slate-200 hover:border-blue-300 hover:shadow-md transition-all">
                     <CardHeader className="pb-3">
                       <div className="flex justify-between items-start">
                         <div className="flex-1">
                           <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200 mb-2">
-                            {costType.kode || 'N/A'}
+                            {contractType.code || 'N/A'}
                           </Badge>
                           <CardTitle className="text-lg">
-                            {costType.nama_biaya}
+                            {contractType.name}
                           </CardTitle>
                         </div>
                         <div className="flex gap-1">
                           <Button
                             variant="ghost"
                             size="icon"
-                            onClick={() => handleOpenDialog(costType)}
+                            onClick={() => handleOpenDialog(contractType)}
                           >
                             <Pencil className="w-4 h-4" />
                           </Button>
@@ -176,8 +176,8 @@ const MasterJenisBiaya = () => {
                             variant="ghost"
                             size="icon"
                             onClick={() => {
-                              if (confirm('Yakin ingin menghapus jenis biaya ini?')) {
-                                deleteMutation.mutate(costType.id);
+                              if (confirm('Yakin ingin menghapus jenis kontrak ini?')) {
+                                deleteMutation.mutate(contractType.id);
                               }
                             }}
                             className="text-red-500 hover:text-red-700"
@@ -189,7 +189,7 @@ const MasterJenisBiaya = () => {
                     </CardHeader>
                     <CardContent>
                       <p className="text-sm text-slate-600">
-                        {costType.deskripsi || 'Tidak ada deskripsi'}
+                        {contractType.description || 'Tidak ada deskripsi'}
                       </p>
                     </CardContent>
                   </Card>
@@ -204,27 +204,27 @@ const MasterJenisBiaya = () => {
         <DialogContent className="max-w-lg">
           <DialogHeader>
             <DialogTitle>
-              {editingCostType ? 'Edit Jenis Biaya' : 'Tambah Jenis Biaya Baru'}
+              {editingContractType ? 'Edit Jenis Kontrak' : 'Tambah Jenis Kontrak Baru'}
             </DialogTitle>
           </DialogHeader>
           <form onSubmit={handleSubmit}>
             <div className="grid gap-4 py-4">
               <div className="space-y-2">
-                <Label>Nama Biaya *</Label>
+                <Label>Nama Jenis Kontrak *</Label>
                 <Input
-                  value={formData.nama_biaya}
-                  onChange={(e) => setFormData({ ...formData, nama_biaya: e.target.value })}
+                  value={formData.name}
+                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                   required
-                  placeholder="Contoh: Gaji & Tunjangan"
+                  placeholder="Contoh: TAD, Proyek Aplikasi, dll.."
                 />
               </div>
 
               <div className="space-y-2">
                 <Label>Kode</Label>
                 <Input
-                  value={formData.kode}
-                  onChange={(e) => setFormData({ ...formData, kode: e.target.value.toUpperCase() })}
-                  placeholder="Contoh: SAL"
+                  value={formData.code}
+                  onChange={(e) => setFormData({ ...formData, code: e.target.value.toUpperCase() })}
+                  placeholder="Contoh: TAD"
                   maxLength={10}
                 />
               </div>
@@ -232,9 +232,9 @@ const MasterJenisBiaya = () => {
               <div className="space-y-2">
                 <Label>Deskripsi</Label>
                 <Textarea
-                  value={formData.deskripsi}
-                  onChange={(e) => setFormData({ ...formData, deskripsi: e.target.value })}
-                  placeholder="Penjelasan tentang jenis biaya ini"
+                  value={formData.description}
+                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                  placeholder="Penjelasan tentang jenis kontrak ini"
                   rows={3}
                 />
               </div>
@@ -254,7 +254,7 @@ const MasterJenisBiaya = () => {
               >
                 {(createMutation.isPending || updateMutation.isPending)
                   ? 'Menyimpan...'
-                  : editingCostType ? 'Update' : 'Simpan'}
+                  : editingContractType ? 'Update' : 'Simpan'}
               </Button>
             </DialogFooter>
           </form>
@@ -264,4 +264,4 @@ const MasterJenisBiaya = () => {
   );
 };
 
-export default MasterJenisBiaya;
+export default MasterJenisKontrak;

@@ -10,6 +10,8 @@ import Projects from './pages/Projects';
 import ProjectDetail from './pages/ProjectDetail';
 import Transactions from './pages/Transactions';
 import MasterJenisBiaya from './pages/MasterJenisBiaya';
+import MasterJenisKontrak from './pages/MasterJenisKontrak';
+import MasterClient from './pages/MasterClient';
 import ManagementFee from './pages/ManagementFee';
 
 // Layout
@@ -77,6 +79,22 @@ function App() {
               <ProtectedRoute adminOnly>
                 <Layout>
                   <MasterJenisBiaya />
+                </Layout>
+              </ProtectedRoute>
+            } />
+
+            <Route path="/master-jenis-kontrak" element={
+              <ProtectedRoute adminOnly>
+                <Layout>
+                  <MasterJenisKontrak />
+                </Layout>
+              </ProtectedRoute>
+            } />
+
+            <Route path="/master-client" element={
+              <ProtectedRoute adminOnly>
+                <Layout>
+                  <MasterClient />
                 </Layout>
               </ProtectedRoute>
             } />

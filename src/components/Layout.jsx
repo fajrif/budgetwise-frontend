@@ -48,6 +48,12 @@ const navigationMasters = [
     roles: ['admin']
   },
   {
+    title: "Master Jenis Kontrak",
+    url: "/master-jenis-kontrak",
+    icon: Settings,
+    roles: ['admin']
+  },
+  {
     title: "Master Client",
     url: "/master-client",
     icon: Settings,
