@@ -83,18 +83,18 @@ const Projects = () => {
 
   return (
     <div className="p-4 md:p-8 bg-gradient-to-br from-slate-50 to-slate-100 min-h-screen">
-      <div className="max-w-7xl mx-auto space-y-6">
+      <div className="max-w-7xl mx-auto space-y-4">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
           <div>
-            <h1 className="text-3xl font-bold text-slate-900">Manajemen Proyek</h1>
+            <h1 className="text-2xl font-bold text-slate-900">Manajemen Proyek</h1>
             <p className="text-slate-500 mt-1">Kelola semua data proyek dan kontrak</p>
           </div>
-          <Button 
+          <Button
             onClick={() => {
               setEditingProject(null);
               setShowForm(true);
             }}
-            className="bg-blue-600 hover:bg-blue-700"
+            className="bg-blue-900 hover:bg-blue-800"
           >
             <Plus className="w-4 h-4 mr-2" />
             Tambah Proyek

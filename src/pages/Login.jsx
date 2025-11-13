@@ -5,7 +5,7 @@ import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../components/ui/card';
-import { TrendingUp } from 'lucide-react';
+import logoGatra from '@/assets/logo-gatra-icon.png';
 
 const Login = () => {
   const navigate = useNavigate();
@@ -37,13 +37,13 @@ const Login = () => {
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 p-4">
       <Card className="w-full max-w-md shadow-2xl">
         <CardHeader className="space-y-4 text-center">
-          <div className="mx-auto w-16 h-16 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-2xl flex items-center justify-center shadow-lg">
-            <TrendingUp className="w-8 h-8 text-white" />
+          <div className="mx-auto w-16 h-16 bg-white rounded-2xl flex items-center justify-center shadow-lg">
+            <img src={logoGatra} className="w-8 h-8" />
           </div>
           <div>
             <CardTitle className="text-3xl font-bold">BudgetWise</CardTitle>
             <CardDescription className="text-base mt-2">
-              Sistem Monitoring Anggaran & Realisasi
+              Sistem Monitoring Anggaran &amp; Realisasi
             </CardDescription>
           </div>
         </CardHeader>
@@ -62,6 +62,7 @@ const Login = () => {
                 type="email"
                 placeholder="nama@email.com"
                 value={formData.email}
+                disabled={loading}
                 onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                 required
               />
@@ -74,6 +75,7 @@ const Login = () => {
                 type="password"
                 placeholder="••••••••"
                 value={formData.password}
+                disabled={loading}
                 onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                 required
               />
@@ -89,9 +91,9 @@ const Login = () => {
           </form>
 
           <div className="mt-6 text-center text-sm text-slate-600">
-            <p>Demo Account:</p>
+            <p>Contact Admin Gatra:</p>
             <p className="font-mono text-xs mt-1">
-              admin@budgetwise.com / admin123
+              admin@gatrahitawasana.com
             </p>
           </div>
         </CardContent>

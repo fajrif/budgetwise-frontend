@@ -29,7 +29,7 @@ const Dialog = ({ children, open, onOpenChange }) => {
 
 const DialogContent = React.forwardRef(({ className, children, ...props }, ref) => (
   <div
-    ref__={ref}
+    ref={ref}
     className={cn(
       "relative z-50 grid w-full max-w-lg gap-4 border bg-background p-6 shadow-lg sm:rounded-lg",
       className
@@ -59,7 +59,7 @@ DialogFooter.displayName = "DialogFooter"
 
 const DialogTitle = React.forwardRef(({ className, ...props }, ref) => (
   <h2
-    ref__={ref}
+    ref={ref}
     className={cn("text-lg font-semibold leading-none tracking-tight", className)}
     {...props}
   />
@@ -68,7 +68,7 @@ DialogTitle.displayName = "DialogTitle"
 
 const DialogDescription = React.forwardRef(({ className, ...props }, ref) => (
   <p
-    ref__={ref}
+    ref={ref}
     className={cn("text-sm text-muted-foreground", className)}
     {...props}
   />

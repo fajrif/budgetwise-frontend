@@ -5,12 +5,33 @@ import { ChevronDown } from "lucide-react"
 const Select = ({ children, value, onValueChange, ...props }) => {
   const [open, setOpen] = React.useState(false)
   const selectRef = React.useRef(null)
+  const [selectedLabel, setSelectedLabel] = React.useState("")
+
+  // Extract label from selected value
+  React.useEffect(() => {
+    if (value && children) {
+      const content = React.Children.toArray(children).find(
+        child => child.type === SelectContent
+      )
+
+      if (content) {
+        const items = React.Children.toArray(content.props.children)
+        const selectedItem = items.find(item => item.props.value === value)
+
+        if (selectedItem) {
+          setSelectedLabel(selectedItem.props.children)
+        }
+      }
+    } else {
+      setSelectedLabel("")
+    }
+  }, [value, children])
 
   return (
     <div className="relative" ref__={selectRef}>
       {React.Children.map(children, child => {
         if (child.type === SelectTrigger) {
-          return React.cloneElement(child, { open, setOpen, value })
+          return React.cloneElement(child, { open, setOpen, value, selectedLabel })
         }
         if (child.type === SelectContent) {
           return React.cloneElement(child, { open, setOpen, onValueChange, selectRef })
@@ -20,27 +41,44 @@ const Select = ({ children, value, onValueChange, ...props }) => {
     </div>
   )
 }
+Select.displayName = "Select"
 
-const SelectTrigger = React.forwardRef(({ className, children, open, setOpen, value, ...props }, ref) => (
-  <button
-    type="button"
-    ref__={ref}
-    className={cn(
-      "flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50",
-      className
-    )}
-    onClick={() => setOpen(!open)}
-    {...props}
-  >
-    {children}
-    <ChevronDown className="h-4 w-4 opacity-50" />
-  </button>
-))
+const SelectTrigger = React.forwardRef(({ className, children, open, setOpen, value, selectedLabel, ...props }, ref) => {
+  // Find SelectValue child and pass selectedLabel to it
+  const updatedChildren = React.Children.map(children, child => {
+    if (child?.type === SelectValue) {
+      return React.cloneElement(child, { selectedLabel, value })
+    }
+    return child
+  })
+
+  return (
+    <button
+      type="button"
+      ref__={ref}
+      className={cn(
+        "flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50",
+        className
+      )}
+      onClick={() => setOpen(!open)}
+      {...props}
+    >
+      {updatedChildren}
+      <ChevronDown className="h-4 w-4 opacity-50" />
+    </button>
+  )
+})
 SelectTrigger.displayName = "SelectTrigger"
 
-const SelectValue = ({ placeholder }) => {
-  return <span>{placeholder}</span>
+const SelectValue = ({ placeholder, selectedLabel, value }) => {
+  // Show selected label if exists, otherwise show placeholder
+  return (
+    <span className={!selectedLabel ? "text-muted-foreground" : ""}>
+      {selectedLabel || placeholder}
+    </span>
+  )
 }
+SelectValue.displayName = "SelectValue"
 
 const SelectContent = ({ className, children, open, setOpen, onValueChange, selectRef, ...props }) => {
   React.useEffect(() => {
@@ -75,6 +113,7 @@ const SelectContent = ({ className, children, open, setOpen, onValueChange, sele
     </div>
   )
 }
+SelectContent.displayName = "SelectContent"
 
 const SelectItem = ({ className, children, value, onValueChange, setOpen, ...props }) => (
   <div
@@ -91,5 +130,6 @@ const SelectItem = ({ className, children, value, onValueChange, setOpen, ...pro
     {children}
   </div>
 )
+SelectItem.displayName = "SelectItem"
 
 export { Select, SelectTrigger, SelectValue, SelectContent, SelectItem }

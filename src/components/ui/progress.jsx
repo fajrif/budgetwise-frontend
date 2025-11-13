@@ -3,7 +3,7 @@ import { cn } from "@/lib/utils"
 
 const Progress = React.forwardRef(({ className, value, indicatorClassName, ...props }, ref) => (
   <div
-    ref__={ref}
+    ref={ref}
     className={cn("relative h-4 w-full overflow-hidden rounded-full bg-secondary", className)}
     {...props}
   >

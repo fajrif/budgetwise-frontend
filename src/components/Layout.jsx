@@ -1,4 +1,5 @@
 import React from 'react';
+import logoGatra from '@/assets/logo-gatra-icon.png';
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import {
@@ -8,7 +9,6 @@ import {
   Settings,
   LogOut,
   Menu,
-  TrendingUp,
   Calculator
 } from 'lucide-react';
 import { Button } from './ui/button';
@@ -38,9 +38,18 @@ const navigationItems = [
     icon: Calculator,
     roles: ['admin']
   },
+];
+
+const navigationMasters = [
   {
-    title: "Master Data",
-    url: "/master-data",
+    title: "Master Jenis Biaya",
+    url: "/master-jenis-biaya",
+    icon: Settings,
+    roles: ['admin']
+  },
+  {
+    title: "Master Client",
+    url: "/master-client",
     icon: Settings,
     roles: ['admin']
   },
@@ -52,6 +61,10 @@ export default function Layout({ children }) {
   const [sidebarOpen, setSidebarOpen] = React.useState(false);
 
   const filteredNavItems = navigationItems.filter(item =>
+    !item.roles || item.roles.includes(user?.role)
+  );
+
+  const filteredNavMasters = navigationMasters.filter(item =>
     !item.roles || item.roles.includes(user?.role)
   );
 
@@ -67,8 +80,8 @@ export default function Layout({ children }) {
           {/* Header */}
           <div className="border-b border-slate-200 p-6">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl flex items-center justify-center shadow-lg">
-                <TrendingUp className="w-6 h-6 text-white" />
+              <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center shadow-lg">
+                <img src={logoGatra} className="w-6 h-6" />
               </div>
               <div>
                 <h2 className="font-bold text-slate-900 text-lg">BudgetWise</h2>
@@ -88,9 +101,32 @@ export default function Layout({ children }) {
                     to={item.url}
                     onClick={() => setSidebarOpen(false)}
                     className={`
-                      flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200
+                      flex items-center gap-3 px-3 py-2.5 text-sm rounded-lg transition-all duration-200
                       ${isActive
-                        ? 'bg-blue-50 text-blue-700 font-medium shadow-sm'
+                        ? 'bg-blue-50 text-blue-900 font-medium shadow-sm'
+                        : 'hover:bg-blue-50 hover:text-blue-700'
+                      }
+                    `}
+                  >
+                    <item.icon className="w-5 h-5" />
+                    <span>{item.title}</span>
+                  </Link>
+                );
+              })}
+            </div>
+            <div className="h-px bg-slate-200 my-2"></div>
+            <div className="space-y-1">
+              {filteredNavMasters.map((item) => {
+                const isActive = location.pathname === item.url;
+                return (
+                  <Link
+                    key={item.title}
+                    to={item.url}
+                    onClick={() => setSidebarOpen(false)}
+                    className={`
+                      flex items-center gap-3 px-3 py-2.5 text-sm rounded-lg transition-all duration-200
+                      ${isActive
+                        ? 'bg-blue-50 text-blue-900 font-medium shadow-sm'
                         : 'hover:bg-blue-50 hover:text-blue-700'
                       }
                     `}

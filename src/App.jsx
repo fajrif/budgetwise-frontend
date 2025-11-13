@@ -9,7 +9,7 @@ import Dashboard from './pages/Dashboard';
 import Projects from './pages/Projects';
 import ProjectDetail from './pages/ProjectDetail';
 import Transactions from './pages/Transactions';
-import MasterData from './pages/MasterData';
+import MasterJenisBiaya from './pages/MasterJenisBiaya';
 import ManagementFee from './pages/ManagementFee';
 
 // Layout
@@ -57,7 +57,7 @@ function App() {
               </ProtectedRoute>
             } />
 
-            <Route path="/projects/:id" element={
+            <Route path="/projects/:projectId" element={
               <ProtectedRoute>
                 <Layout>
                   <ProjectDetail />
@@ -73,10 +73,10 @@ function App() {
               </ProtectedRoute>
             } />
 
-            <Route path="/master-data" element={
+            <Route path="/master-jenis-biaya" element={
               <ProtectedRoute adminOnly>
                 <Layout>
-                  <MasterData />
+                  <MasterJenisBiaya />
                 </Layout>
               </ProtectedRoute>
             } />
