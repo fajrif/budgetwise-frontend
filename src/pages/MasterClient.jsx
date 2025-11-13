@@ -7,34 +7,35 @@ import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
 import { Textarea } from '../components/ui/textarea';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '../components/ui/dialog';
-import { Plus, Pencil, Trash2, Tag } from 'lucide-react';
+import { Plus, Pencil, Trash2, Tag, Building2, User, Phone } from 'lucide-react';
 import { Badge } from '../components/ui/badge';
 
-const MasterJenisBiaya = () => {
+const MasterClient = () => {
   const queryClient = useQueryClient();
   const [showDialog, setShowDialog] = useState(false);
-  const [editingCostType, setEditingCostType] = useState(null);
+  const [editingClient, setEditingClient] = useState(null);
   const [formData, setFormData] = useState({
-    nama_biaya: '',
-    kode: '',
-    deskripsi: ''
+    name: '',
+    contact_name: '',
+    phone: '',
+    address: ''
   });
 
-  const { data: costTypesData = { cost_types: [] }, isLoading } = useQuery({
-    queryKey: ['costTypes'],
+  const { data: clientsData = { clients: [] }, isLoading } = useQuery({
+    queryKey: ['clients'],
     queryFn: async () => {
-      const response = await api.get('/cost-types');
+      const response = await api.get('/clients');
       return response.data;
     }
   });
 
   const createMutation = useMutation({
     mutationFn: async (data) => {
-      const response = await api.post('/cost-types', data);
+      const response = await api.post('/clients', data);
       return response.data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries(['costTypes']);
+      queryClient.invalidateQueries(['clients']);
       setShowDialog(false);
       resetForm();
     }
@@ -42,11 +43,11 @@ const MasterJenisBiaya = () => {
 
   const updateMutation = useMutation({
     mutationFn: async ({ id, data }) => {
-      const response = await api.put(`/cost-types/${id}`, data);
+      const response = await api.put(`/clients/${id}`, data);
       return response.data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries(['costTypes']);
+      queryClient.invalidateQueries(['clients']);
       setShowDialog(false);
       resetForm();
     }
@@ -54,30 +55,32 @@ const MasterJenisBiaya = () => {
 
   const deleteMutation = useMutation({
     mutationFn: async (id) => {
-      await api.delete(`/cost-types/${id}`);
+      await api.delete(`/clients/${id}`);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries(['costTypes']);
+      queryClient.invalidateQueries(['clients']);
     }
   });
 
   const resetForm = () => {
     setFormData({
-      nama_biaya: '',
-      kode: '',
-      deskripsi: ''
+      name: '',
+      contact_name: '',
+      phone: '',
+      address: ''
     });
-    setEditingCostType(null);
+    setEditingClient(null);
   };
 
-  const handleOpenDialog = (costType = null) => {
-    if (costType) {
+  const handleOpenDialog = (client = null) => {
+    if (client) {
       setFormData({
-        nama_biaya: costType.nama_biaya || '',
-        kode: costType.kode || '',
-        deskripsi: costType.deskripsi || ''
+        name: client.name || '',
+        contact_name: client.contact_name || '',
+        phone: client.phone || '',
+        address: client.address || ''
       });
-      setEditingCostType(costType);
+      setEditingClient(client);
     } else {
       resetForm();
     }
@@ -86,8 +89,8 @@ const MasterJenisBiaya = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (editingCostType) {
-      updateMutation.mutate({ id: editingCostType.id, data: formData });
+    if (editingClient) {
+      updateMutation.mutate({ id: editingClient.id, data: formData });
     } else {
       createMutation.mutate(formData);
     }
@@ -98,8 +101,8 @@ const MasterJenisBiaya = () => {
       <div className="max-w-7xl mx-auto space-y-4">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
           <div>
-            <h1 className="text-2xl font-bold text-slate-900">Master Jenis Biaya</h1>
-            <p className="text-slate-500 mt-1">Kelola jenis biaya dan kategori</p>
+            <h1 className="text-2xl font-bold text-slate-900">Master Client</h1>
+            <p className="text-slate-500 mt-1">Kelola data client atau pelanggan anda</p>
           </div>
         </div>
 
@@ -110,14 +113,15 @@ const MasterJenisBiaya = () => {
                 <Tag className="w-5 h-5 text-white" />
               </div>
               <div>
-                <h3 className="font-semibold text-slate-900 mb-2">Tentang Master Jenis Biaya</h3>
+                <h3 className="font-semibold text-slate-900 mb-2">Tentang Master Client</h3>
                 <p className="text-sm text-slate-700 mb-3">
-                  Master Jenis Biaya digunakan untuk mengkategorikan anggaran dan transaksi dalam sistem.
+                  Master Client digunakan untuk pendataan data perusahaan yang di gunakan pada system.
                 </p>
                 <div className="space-y-1 text-sm text-slate-600">
-                  <p>• <strong className="font-semibold">Nama Biaya:</strong> Nama lengkap jenis biaya</p>
-                  <p>• <strong className="font-semibold">Kode:</strong> Singkatan untuk identifikasi cepat</p>
-                  <p>• <strong className="font-semibold">Deskripsi:</strong> Penjelasan detail tentang jenis biaya</p>
+                  <p>• <strong className="font-semibold">Nama:</strong> Nama perusahaan / client / calon client</p>
+                  <p>• <strong className="font-semibold">PIC Contact:</strong> Nama person-in-charge pada perusahaan tsb. yang dapat dihubungi.</p>
+                  <p>• <strong className="font-semibold">Phone:</strong> No. Telp perusahaan atau PIC</p>
+                  <p>• <strong className="font-semibold">Alamat:</strong> Alamat lengkap perusahaan ( Kantor Pusat / Cabang )</p>
                 </div>
               </div>
             </div>
@@ -130,45 +134,42 @@ const MasterJenisBiaya = () => {
               <div>
                 <CardTitle className="text-xl font-bold flex items-center gap-2">
                   <Tag className="w-5 h-5 text-blue-600" />
-                  Master Jenis Biaya
+                  Master Client
                 </CardTitle>
-                <p className="text-sm text-slate-500 mt-1">Daftar jenis biaya untuk anggaran dan transaksi</p>
+                <p className="text-sm text-slate-500 mt-1">List client / perusahaan yang didaftarkan pada system.</p>
               </div>
               <Button
                 onClick={() => handleOpenDialog()}
                 className="bg-blue-900 hover:bg-blue-800"
               >
                 <Plus className="w-4 h-4 mr-2" />
-                Tambah Jenis Biaya
+                Tambah Client
               </Button>
             </div>
           </CardHeader>
           <CardContent className="pt-6">
             {isLoading ? (
               <div className="text-center py-8">Loading...</div>
-            ) : costTypesData.cost_types.length === 0 ? (
+            ) : clientsData.clients.length === 0 ? (
               <div className="text-center py-8 text-slate-500">
-                Belum ada jenis biaya. Tambahkan jenis biaya pertama.
+                Belum ada client. Tambahkan client pertama anda.
               </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {costTypesData.cost_types.map((costType) => (
-                  <Card key={costType.id} className="border-2 border-slate-200 hover:border-blue-300 hover:shadow-md transition-all">
+                {clientsData.clients.map((client) => (
+                  <Card key={client.id} className="border-2 border-slate-200 hover:border-blue-300 hover:shadow-md transition-all">
                     <CardHeader className="pb-3">
                       <div className="flex justify-between items-start">
                         <div className="flex-1">
-                          <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200 mb-2">
-                            {costType.kode || 'N/A'}
-                          </Badge>
                           <CardTitle className="text-lg">
-                            {costType.nama_biaya}
+                            {client.name}
                           </CardTitle>
                         </div>
                         <div className="flex gap-1">
                           <Button
                             variant="ghost"
                             size="icon"
-                            onClick={() => handleOpenDialog(costType)}
+                            onClick={() => handleOpenDialog(client)}
                           >
                             <Pencil className="w-4 h-4" />
                           </Button>
@@ -176,8 +177,8 @@ const MasterJenisBiaya = () => {
                             variant="ghost"
                             size="icon"
                             onClick={() => {
-                              if (confirm('Yakin ingin menghapus jenis biaya ini?')) {
-                                deleteMutation.mutate(costType.id);
+                              if (confirm('Yakin ingin menghapus client ini?')) {
+                                deleteMutation.mutate(client.id);
                               }
                             }}
                             className="text-red-500 hover:text-red-700"
@@ -188,9 +189,20 @@ const MasterJenisBiaya = () => {
                       </div>
                     </CardHeader>
                     <CardContent>
-                      <p className="text-sm text-slate-600">
-                        {costType.deskripsi || 'Tidak ada deskripsi'}
-                      </p>
+                      <div className="space-y-2 text-sm">
+                        <div className="flex items-center gap-2">
+                          <User className="w-4 h-4" />
+                          <span>{client.contact_name || '-'}</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Phone className="w-4 h-4" />
+                          <span>{client.phone || '-'}</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Building2 className="w-4 h-4" />
+                          <span>{client.address || '-'}</span>
+                        </div>
+                      </div>
                     </CardContent>
                   </Card>
                 ))}
@@ -204,37 +216,45 @@ const MasterJenisBiaya = () => {
         <DialogContent className="max-w-lg">
           <DialogHeader>
             <DialogTitle>
-              {editingCostType ? 'Edit Jenis Biaya' : 'Tambah Jenis Biaya Baru'}
+              {editingClient ? 'Edit Client' : 'Tambah Client Baru'}
             </DialogTitle>
           </DialogHeader>
           <form onSubmit={handleSubmit}>
             <div className="grid gap-4 py-4">
               <div className="space-y-2">
-                <Label>Nama Biaya *</Label>
+                <Label>Nama Client *</Label>
                 <Input
-                  value={formData.nama_biaya}
-                  onChange={(e) => setFormData({ ...formData, nama_biaya: e.target.value })}
+                  value={formData.name}
+                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                   required
-                  placeholder="Contoh: Gaji & Tunjangan"
+                  placeholder="Nama lengkap perusahaan"
                 />
               </div>
 
               <div className="space-y-2">
-                <Label>Kode</Label>
+                <Label>PIC Contact</Label>
                 <Input
-                  value={formData.kode}
-                  onChange={(e) => setFormData({ ...formData, kode: e.target.value.toUpperCase() })}
-                  placeholder="Contoh: SAL"
-                  maxLength={10}
+                  value={formData.contact_name}
+                  onChange={(e) => setFormData({ ...formData, contact_name: e.target.value })}
+                  placeholder="Nama person-in-charge"
                 />
               </div>
 
               <div className="space-y-2">
-                <Label>Deskripsi</Label>
+                <Label>Phone</Label>
+                <Input
+                  value={formData.phone}
+                  onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                  placeholder="No.Telp yang bisa dihubungi"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label>Alamat</Label>
                 <Textarea
-                  value={formData.deskripsi}
-                  onChange={(e) => setFormData({ ...formData, deskripsi: e.target.value })}
-                  placeholder="Penjelasan tentang jenis biaya ini"
+                  value={formData.address}
+                  onChange={(e) => setFormData({ ...formData, address: e.target.value })}
+                  placeholder="Alamat lengkap perusahaan"
                   rows={3}
                 />
               </div>
@@ -254,7 +274,7 @@ const MasterJenisBiaya = () => {
               >
                 {(createMutation.isPending || updateMutation.isPending)
                   ? 'Menyimpan...'
-                  : editingCostType ? 'Update' : 'Simpan'}
+                  : editingClient ? 'Update' : 'Simpan'}
               </Button>
             </DialogFooter>
           </form>
@@ -264,4 +284,4 @@ const MasterJenisBiaya = () => {
   );
 };
 
-export default MasterJenisBiaya;
+export default MasterClient;
