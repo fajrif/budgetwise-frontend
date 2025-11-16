@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card'
 import { Button } from '../components/ui/button';
 import { Badge } from '../components/ui/badge';
 import { Progress } from '../components/ui/progress';
-import { ArrowLeft, Building2, Calendar } from 'lucide-react';
+import { ArrowLeft, Building2, Calendar, User } from 'lucide-react';
 import { format } from 'date-fns';
 import { id } from 'date-fns/locale';
 import { getStatusColor } from '@/utils/ProjectHelper';
@@ -84,7 +84,7 @@ const ProjectDetail = () => {
           </Button>
           <div>
             <h1 className="text-xl font-bold text-slate-900">{project.judul_pekerjaan}</h1>
-            <p className="text-slate-500">SP2K: {project.no_sp2k}</p>
+            <p className="text-slate-500">No.SP2K: {project.no_sp2k}</p>
           </div>
           <Badge className={`${getStatusColor(project.status_kontrak)} text-sm py-2 px-4 ml-auto`}>{project.status_kontrak}</Badge>
         </div>
@@ -136,37 +136,82 @@ const ProjectDetail = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               <div>
                 <p className="text-sm text-slate-500">Client</p>
-                <p className="font-medium flex items-center gap-2">
+                <p className="font-normal flex items-center gap-2">
                   <Building2 className="w-4 h-4" />
-                  {project.client || '-'}
+                  {project.client_details.name || '-'}
                 </p>
               </div>
               <div>
                 <p className="text-sm text-slate-500">PIC Client</p>
-                <p className="font-medium">{project.pic_client || '-'}</p>
+                <p className="font-normal flex items-center gap-2">
+                  <User className="w-4 h-4" />
+                  {project.client_details.contact_name || '-'}
+                </p>
+                <p className="font-normal text-sm text-slate-400">
+                  {project.client_details.phone || '-'}
+                </p>
               </div>
               <div>
-                <p className="text-sm text-slate-500">Tanggal Mulai</p>
-                <p className="font-medium flex items-center gap-2">
+                <p className="text-sm text-slate-500">Tanggal Perjanjian</p>
+                <p className="font-normal flex items-center gap-2">
                   <Calendar className="w-4 h-4" />
-                  {project.tanggal_mulai && format(new Date(project.tanggal_mulai), 'dd MMM yyyy', { locale: id })}
+                  {project.tanggal_perjanjian && format(new Date(project.tanggal_perjanjian), 'dd MMM yyyy', { locale: id })}
                 </p>
               </div>
               <div>
                 <p className="text-sm text-slate-500">Jangka Waktu</p>
-                <p className="font-medium">{project.jangka_waktu || 0} Bulan</p>
+                <p className="font-normal">{project.jangka_waktu || 0} Bulan</p>
               </div>
               <div>
                 <p className="text-sm text-slate-500">Nilai Pekerjaan</p>
-                <p className="font-medium flex items-center gap-2">
+                <p className="font-normal flex items-center gap-2">
                   {formatRupiah(project.nilai_pekerjaan)}
                 </p>
               </div>
               <div>
                 <p className="text-sm text-slate-500">Jenis Kontrak</p>
-                <p className="font-medium">{project.jenis_kontrak}</p>
+                <p className="font-normal">{project.contract_type_details.name}</p>
               </div>
             </div>
+          </CardContent>
+          <CardHeader className="py-2">
+            <CardTitle className="text-base">Management Fee</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              <div>
+                <p className="text-sm text-slate-500">Management Fee (Rp.)</p>
+                <p className="font-normal">{formatRupiah(project.management_fee) || '-' }</p>
+              </div>
+              <div>
+                <p className="text-sm text-slate-500">Tarif Management Fee Persen</p>
+                <p className="font-normal">{project.tarif_management_fee_persen || '-' } %</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent>
+            <table className="border-collapse border border-gray-400 text-sm w-full mt-6">
+              <thead>
+                <tr className="text-start">
+                  <th className="border border-gray-200 font-medium text-slate-500 text-start p-2">No.SP2K</th>
+                  <th className="border border-gray-200 font-medium text-slate-500 text-start p-2">No.Perjanjian</th>
+                  <th className="border border-gray-200 font-medium text-slate-500 text-start p-2">No.Amandemen</th>
+                  <th className="border border-gray-200 font-medium text-slate-500 text-start p-2">Tanggal Mulai</th>
+                  <th className="border border-gray-200 font-medium text-slate-500 text-start p-2">Tanggal Selesai</th>
+                </tr>
+              </thead>
+                <tbody>
+                  <tr>
+                    <td className="border border-gray-200 font-normal p-2">{project.no_sp2k}</td>
+                    <td className="border border-gray-200 font-normal p-2">{project.no_perjanjian || '-'}</td>
+                    <td className="border border-gray-200 font-normal p-2">{project.no_amandemen || '-'}</td>
+                    <td className="border border-gray-200 font-normal p-2">{project.tanggal_mulai && format(new Date(project.tanggal_mulai), 'dd MMM yyyy', { locale: id })}</td>
+                    <td className="border border-gray-200 font-normal p-2">{project.tanggal_selesai && format(new Date(project.tanggal_selesai), 'dd MMM yyyy', { locale: id })}</td>
+                </tr>
+              </tbody>
+            </table>
           </CardContent>
         </Card>
       </div>

@@ -1,25 +1,70 @@
 // src/utils/validation.ts
 import { z } from "zod";
 
+// Fungsi helper untuk mengubah string tanggal sederhana (YYYY-MM-DD) menjadi timestamp lengkap (ISO 8601)
+const toISOString = (dateString: string) => {
+  if (!dateString) return null;
+  // Ini mengasumsikan waktu lokal tengah malam di lokasi browser,
+  // lalu mengonversinya menjadi UTC (format Z di akhir)
+  try {
+    const date = new Date(dateString);
+    // Jika format input YYYY-MM-DD, Date() akan menganggapnya UTC 00:00.
+    // Kita ingin memastikan outputnya memiliki format ISO yang lengkap.
+    return date.toISOString();
+  } catch {
+    return null; // Handle invalid date strings gracefully
+  }
+};
+
+// Helper function untuk Preprocessing Angka
+const preprocessNumber = (val: any) => {
+  // Jika string kosong ("") atau null, kembalikan undefined (untuk menjadi null di JSON)
+  console.log(val);
+  if (val === "" || val === null) {
+    return undefined;
+  }
+  const num = Number(val);
+  return num;
+};
+
 export const projectSchema = z.object({
   id: z.string().optional(),
   no_sp2k: z.string().min(1, "No SP2K required"),
   no_perjanjian: z.string().nullable().optional(),
   no_amandemen: z.string().nullable().optional(),
-  tanggal_perjanjian: z.string().nullable().optional(), // ISO date string
+  tanggal_perjanjian: z.preprocess((val) => toISOString(val as string), z.string().nullable().optional()),
   judul_pekerjaan: z.string().min(1, "Judul required"),
-  jangka_waktu: z.preprocess((v) => (v === "" ? undefined : Number(v)), z.number().int().positive().nullable().optional()),
-  tanggal_mulai: z.string().min(1, "Tanggal mulai required"),
-  tanggal_selesai: z.string().min(1, "Tanggal selesai required"),
+  tanggal_mulai: z.preprocess((val) => toISOString(val as string), z.string().min(1, "Tanggal mulai required")),
+  tanggal_selesai: z.preprocess((val) => toISOString(val as string), z.string().min(1, "Tanggal selesai required")),
   nilai_pekerjaan: z.preprocess((v) => Number(v), z.number().positive()),
-  management_fee: z.preprocess((v) => (v === "" ? undefined : Number(v)), z.number().nullable().optional()),
-  tarif_management_fee_persen: z.preprocess((v) => (v === "" ? undefined : Number(v)), z.number().nullable().optional()),
-  client: z.string().nullable().optional(),
-  pic_client: z.string().nullable().optional(),
-  contact_client: z.string().nullable().optional(),
-  alamat_client: z.string().nullable().optional(),
-  jenis_kontrak: z.string().nullable().optional(),
+  management_fee: z.number().nullable().optional(),
+  tarif_management_fee_persen: z.number().nullable().optional(),
+  client_id: z.string().uuid("Invalid client ID format").min(1, "Client is required"),
+  contract_type_id: z.string().uuid("Invalid contract type ID format").min(1, "Jenis Kontrak is required"),
   status_kontrak: z.string().optional().default("Active"),
+})
+.refine((data) => new Date(data.tanggal_selesai) > new Date(data.tanggal_mulai), {
+  // Validasi: tanggal_selesai > tanggal_mulai
+  message: "Tanggal selesai harus setelah tanggal mulai",
+  path: ["tanggal_selesai"],
+})
+.refine((data) => {
+    // Validasi: tanggal_perjanjian <= tanggal_mulai
+    // Opsional, jadi OK jika kosong
+    if (!data.tanggal_perjanjian) return true;
+    return new Date(data.tanggal_perjanjian) <= new Date(data.tanggal_mulai);
+  }, {
+    message: "Tanggal perjanjian tidak boleh setelah tanggal mulai",
+    path: ["tanggal_perjanjian"],
+  })
+.refine((data) => {
+  // Validasi: management_fee < nilai_pekerjaan
+  // Opsional, jadi OK jika kosong
+  if (data.management_fee === undefined || data.management_fee === null) return true;
+  return data.management_fee < data.nilai_pekerjaan;
+}, {
+  message: "Management fee tidak boleh melebihi nilai pekerjaan",
+  path: ["management_fee"],
 });
 
 export type Project = z.infer<typeof projectSchema>;
