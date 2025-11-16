@@ -1,4 +1,7 @@
-import React, { useState } from 'react';
+import { useEffect } from 'react';
+import { useForm, Controller } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { useQuery } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '../ui/card';
 import { Input } from '../ui/input';
 import { Label } from '../ui/label';
@@ -7,42 +10,47 @@ import { Textarea } from '../ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
 import { projectSchema } from "@/utils/validations";
 
-const ProjectForm = ({ project, onSubmit, onCancel, isSubmitting }) => {
-  const [formData, setFormData] = useState(project || {
-    no_sp2k: '',
-    no_perjanjian: '',
-    no_amandemen: '',
-    tanggal_perjanjian: '',
-    judul_pekerjaan: '',
-    jangka_waktu: '',
-    tanggal_mulai: '',
-    tanggal_selesai: '',
-    nilai_pekerjaan: '',
-    management_fee: '',
-    tarif_management_fee_persen: '',
-    client: '',
-    pic_client: '',
-    contact_client: '',
-    alamat_client: '',
-    jenis_kontrak: 'Project Aplikasi',
-    status_kontrak: 'Active'
-  });
-  const [error, setError] = useState("");
+const ProjectForm = ({ project, clients, contractTypes, onSubmit, onCancel, isSubmitting }) => {
 
-  const handleChange = (field, value) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
-  };
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    const parsed = projectSchema.safeParse(formData);
-    if (!parsed.success) {
-      setError(parsed.error.issues[0].message);
-      return;
+  // --- React Hook Form Setup ---
+  const { register, control, handleSubmit, formState: { errors }, reset } = useForm({
+    resolver: zodResolver(projectSchema),
+    defaultValues: project || {
+      no_sp2k: '',
+      no_perjanjian: '',
+      no_amandemen: '',
+      tanggal_perjanjian: '',
+      judul_pekerjaan: '',
+      tanggal_mulai: '',
+      tanggal_selesai: '',
+      nilai_pekerjaan: '',
+      management_fee: '',
+      tarif_management_fee_persen: '',
+      client_id: '',
+      contract_type_id: '',
+      status_kontrak: 'Active'
     }
-    console.log("✅ Valid data:", parsed.data);
-    setError("");
-    onSubmit(formData);
+  });
+
+  // Gunakan useEffect untuk me-reset form setiap kali project data berubah
+  useEffect(() => {
+    if (project) {
+      // 🔥 PENTING: Format ulang tanggal sebelum reset()
+      const formattedData = {
+        ...project,
+        // Konversi ISO string menjadi YYYY-MM-DD untuk input type="date"
+        tanggal_mulai: project.tanggal_mulai ? project.tanggal_mulai.split('T')[0] : '',
+        tanggal_selesai: project.tanggal_selesai ? project.tanggal_selesai.split('T')[0] : '',
+        tanggal_perjanjian: project.tanggal_perjanjian ? project.tanggal_perjanjian.split('T')[0] : '',
+      };
+
+      reset(formattedData);
+    }
+  }, [project, reset]); // 'reset' dan 'project' adalah dependency
+
+  const onHandleSubmit = async (data) => {
+    console.log(data);
+    onSubmit(data);
   };
 
   return (
@@ -52,19 +60,17 @@ const ProjectForm = ({ project, onSubmit, onCancel, isSubmitting }) => {
           {project ? 'Edit Proyek' : 'Tambah Proyek Baru'}
         </CardTitle>
       </CardHeader>
-      <form onSubmit={handleSubmit}>
+      <form onSubmit={handleSubmit(onHandleSubmit)}>
         <CardContent className="pt-6">
-          {error && <p className="text-red-500 mt-2">{error}</p>}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-2">
               <Label htmlFor="no_sp2k">No SP2K *</Label>
               <Input
                 id="no_sp2k"
-                value={formData.no_sp2k}
                 placeholder="Contoh: SP2K-2024-001"
-                onChange={(e) => handleChange('no_sp2k', e.target.value)}
-                required
+                {...register("no_sp2k")}
               />
+              {errors.no_sp2k && <p className="text-red-500 text-sm">{errors.no_sp2k.message}</p>}
             </div>
 
             <div className="space-y-2">
@@ -72,9 +78,9 @@ const ProjectForm = ({ project, onSubmit, onCancel, isSubmitting }) => {
               <Input
                 id="no_perjanjian"
                 placeholder="Contoh: GATRA-2024-001"
-                value={formData.no_perjanjian}
-                onChange={(e) => handleChange('no_perjanjian', e.target.value)}
+                {...register("no_perjanjian")}
               />
+              {errors.no_perjanjian && <p className="text-red-500 text-sm">{errors.no_perjanjian.message}</p>}
             </div>
 
             <div className="space-y-2">
@@ -82,9 +88,9 @@ const ProjectForm = ({ project, onSubmit, onCancel, isSubmitting }) => {
               <Input
                 id="no_amandemen"
                 placeholder="Jika ada amandemen"
-                value={formData.no_amandemen}
-                onChange={(e) => handleChange('no_amandemen', e.target.value)}
+                {...register("no_amandemen")}
               />
+              {errors.no_amandemen && <p className="text-red-500 text-sm">{errors.no_amandemen.message}</p>}
             </div>
 
             <div className="space-y-2">
@@ -92,19 +98,18 @@ const ProjectForm = ({ project, onSubmit, onCancel, isSubmitting }) => {
               <Input
                 id="tanggal_perjanjian"
                 type="date"
-                value={formData.tanggal_perjanjian}
-                onChange={(e) => handleChange('tanggal_perjanjian', e.target.value)}
+                {...register("tanggal_perjanjian")}
               />
+              {errors.tanggal_perjanjian && <p className="text-red-500 text-sm">{errors.tanggal_perjanjian.message}</p>}
             </div>
 
             <div className="space-y-2 col-span-full">
               <Label htmlFor="judul_pekerjaan">Judul Pekerjaan *</Label>
               <Input
                 id="judul_pekerjaan"
-                value={formData.judul_pekerjaan}
-                onChange={(e) => handleChange('judul_pekerjaan', e.target.value)}
-                required
+                {...register("judul_pekerjaan")}
               />
+              {errors.judul_pekerjaan && <p className="text-red-500 text-sm">{errors.judul_pekerjaan.message}</p>}
             </div>
 
             <div className="space-y-2">
@@ -112,10 +117,9 @@ const ProjectForm = ({ project, onSubmit, onCancel, isSubmitting }) => {
               <Input
                 id="tanggal_mulai"
                 type="date"
-                value={formData.tanggal_mulai}
-                onChange={(e) => handleChange('tanggal_mulai', e.target.value)}
-                required
+                {...register("tanggal_mulai")}
               />
+              {errors.tanggal_mulai && <p className="text-red-500 text-sm">{errors.tanggal_mulai.message}</p>}
             </div>
 
             <div className="space-y-2">
@@ -123,10 +127,9 @@ const ProjectForm = ({ project, onSubmit, onCancel, isSubmitting }) => {
               <Input
                 id="tanggal_selesai"
                 type="date"
-                value={formData.tanggal_selesai}
-                onChange={(e) => handleChange('tanggal_selesai', e.target.value)}
-                required
+                {...register("tanggal_selesai")}
               />
+              {errors.tanggal_selesai && <p className="text-red-500 text-sm">{errors.tanggal_selesai.message}</p>}
             </div>
 
             <div className="space-y-2">
@@ -134,50 +137,89 @@ const ProjectForm = ({ project, onSubmit, onCancel, isSubmitting }) => {
               <Input
                 id="nilai_pekerjaan"
                 type="number"
-                value={formData.nilai_pekerjaan}
-                onChange={(e) => handleChange('nilai_pekerjaan', e.target.value)}
                 placeholder="Contoh: Rp.100,000,000"
-                required
+                {...register("nilai_pekerjaan")}
               />
+              {errors.nilai_pekerjaan && <p className="text-red-500 text-sm">{errors.nilai_pekerjaan.message}</p>}
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="client">Client</Label>
-              <Input
-                id="client"
-                value={formData.client}
-                onChange={(e) => handleChange('client', e.target.value)}
+              <Label htmlFor="client_id">Client</Label>
+              {/* Use the Controller for your custom Select component */}
+              <Controller
+                name="client_id"
+                control={control}
+                render={({ field: { onChange, value } }) => (
+                  // The render prop passes the necessary onChange and value handlers
+                  <Select
+                    value={value}
+                    onValueChange={onChange}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select a Client" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {/* Map over your fetched clients data */}
+                      {clients.map((client) => (
+                        <SelectItem key={client.id} value={client.id}>
+                          {client.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                )}
               />
+              {errors.client_id && <p className="text-red-500 text-sm">{errors.client_id.message}</p>}
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="jenis_kontrak">Jenis Kontrak</Label>
-              <Select value={formData.jenis_kontrak} onValueChange={(val) => handleChange('jenis_kontrak', val)}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="TAD">TAD</SelectItem>
-                  <SelectItem value="EOS">EOS</SelectItem>
-                  <SelectItem value="Project Aplikasi">Project Aplikasi</SelectItem>
-                  <SelectItem value="Perangkat">Perangkat</SelectItem>
-                  <SelectItem value="Barang & Jasa">Barang & Jasa</SelectItem>
-                </SelectContent>
-              </Select>
+              <Label htmlFor="contract_type_id">Jenis Kontrak</Label>
+              <Controller
+                name="contract_type_id"
+                control={control}
+                render={({ field: { onChange, value } }) => (
+                  <Select
+                    value={value}
+                    onValueChange={onChange}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Pilih Jenis Kontrak" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {contractTypes.map((ct) => (
+                        <SelectItem key={ct.id} value={ct.id}>
+                          {ct.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                )}
+              />
+              {errors.contract_type_id && <p className="text-red-500 text-sm">{errors.contract_type_id.message}</p>}
             </div>
 
             <div className="space-y-2">
               <Label htmlFor="status_kontrak">Status Kontrak</Label>
-              <Select value={formData.status_kontrak} onValueChange={(val) => handleChange('status_kontrak', val)}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="Active">Active</SelectItem>
-                  <SelectItem value="Pending">Pending</SelectItem>
-                  <SelectItem value="Non Aktif">Non Aktif</SelectItem>
-                </SelectContent>
-              </Select>
+              <Controller
+                name="status_kontrak"
+                control={control}
+                render={({ field: { onChange, value } }) => (
+                  <Select
+                    value={value}
+                    onValueChange={onChange}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Pilih Status Kontrak" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="Active">Active</SelectItem>
+                      <SelectItem value="Pending">Pending</SelectItem>
+                      <SelectItem value="Non Aktif">Non Aktif</SelectItem>
+                    </SelectContent>
+                  </Select>
+                )}
+              />
+              {errors.status_kontrak && <p className="text-red-500 text-sm">{errors.status_kontrak.message}</p>}
             </div>
 
             <div className="space-y-2">
@@ -185,20 +227,20 @@ const ProjectForm = ({ project, onSubmit, onCancel, isSubmitting }) => {
               <Input
                 id="management_fee"
                 type="number"
-                value={formData.management_fee}
-                onChange={(e) => handleChange('management_fee', e.target.value)}
+                {...register("management_fee", { valueAsNumber: true })}
               />
+              {errors.management_fee && <p className="text-red-500 text-sm">{errors.management_fee.message}</p>}
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="tarif_management_fee">Tarif Management Fee (%)</Label>
+              <Label htmlFor="tarif_management_fee_persen">Tarif Management Fee (%)</Label>
               <Input
-                id="tarif_management_fee"
+                id="tarif_management_fee_persen"
                 type="number"
-                step="0.1"
-                value={formData.tarif_management_fee_persen}
-                onChange={(e) => handleChange('tarif_management_fee_persen', e.target.value)}
+                step="0.01"
+                {...register("tarif_management_fee_persen", { valueAsNumber: true })}
               />
+              {errors.tarif_management_fee_persen && <p className="text-red-500 text-sm">{errors.tarif_management_fee_persen.message}</p>}
             </div>
           </div>
         </CardContent>
@@ -206,7 +248,7 @@ const ProjectForm = ({ project, onSubmit, onCancel, isSubmitting }) => {
           <Button type="button" variant="outline" onClick={onCancel} disabled={isSubmitting}>
             Batal
           </Button>
-          <Button type="submit" disabled={isSubmitting} className="bg-blue-900 hover:bg-blue-800">
+          <Button type="submit" className="bg-blue-900 hover:bg-blue-800">
             {isSubmitting ? 'Menyimpan...' : project ? 'Update' : 'Simpan'}
           </Button>
         </CardFooter>

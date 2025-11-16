@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { api } from '../api/axios';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
@@ -14,6 +14,7 @@ const Projects = () => {
   const [editingProject, setEditingProject] = useState(null);
   const queryClient = useQueryClient();
 
+  // --- Data Fetching Logic ---
   const { data: projectsData = { projects: [] }, isLoading } = useQuery({
     queryKey: ['projects'],
     queryFn: async () => {
@@ -37,6 +38,24 @@ const Projects = () => {
       return response.data;
     }
   });
+
+  const { data: clientsData = { clients: [] } } = useQuery({
+    queryKey: ['clients'],
+    queryFn: async () => {
+      const response = await api.get('/clients');
+      return response.data;
+    }
+  });
+  const clients = clientsData?.clients || [];
+
+  const { data: contractTypesData = { contract_types: [] } } = useQuery({
+    queryKey: ['contractTypes'],
+    queryFn: async () => {
+      const response = await api.get('/contract-types');
+      return response.data;
+    }
+  });
+  const contractTypes = contractTypesData?.contract_types || [];
 
   const createMutation = useMutation({
     mutationFn: async (data) => {
@@ -74,6 +93,13 @@ const Projects = () => {
     setEditingProject(project);
     setShowForm(true);
   };
+
+  // 🔥 Tambahkan useEffect ini
+  //useEffect(() => {
+    //if (editingProject) {
+      //console.log("Nilai editingProject yang sudah diperbarui:", editingProject);
+    //}
+  //}, [editingProject]); // useEffect ini hanya berjalan saat editingProject berubah
 
   const filteredProjects = projectsData.projects.filter(project =>
     project.judul_pekerjaan?.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -118,6 +144,8 @@ const Projects = () => {
         {showForm && (
           <ProjectForm
             project={editingProject}
+            clients={clients}
+            contractTypes={contractTypes}
             onSubmit={handleSubmit}
             onCancel={() => {
               setShowForm(false);

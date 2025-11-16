@@ -34,7 +34,7 @@ const ProjectCard = ({ project, budgetItems, transactions, onEdit }) => {
     <Card className="hover:shadow-xl transition-all">
       <div className={`h-2 ${percentage >= 90 ? 'bg-red-500' : percentage >= 80 ? 'bg-orange-500' : 'bg-green-500'}`} />
       <CardHeader className="pb-3">
-        <div className="flex justify-between items-start mb-2">
+        <div className="flex justify-between items-center">
           <Badge className={getStatusColor(project.status_kontrak)}>{project.status_kontrak}</Badge>
           <Button variant="ghost" size="icon" onClick={() => onEdit(project)}>
             <Pencil className="w-4 h-4" />
@@ -47,14 +47,14 @@ const ProjectCard = ({ project, budgetItems, transactions, onEdit }) => {
         <div className="space-y-2 text-sm">
           <div className="flex items-center gap-2">
             <Building2 className="w-4 h-4" />
-            <span>{project.client || '-'}</span>
+            <span>{project.client_details?.name || '-'}</span>
           </div>
           <div className="flex items-center gap-2">
             <Calendar className="w-4 h-4" />
-            <span>{project.tanggal_mulai ? format(new Date(project.tanggal_mulai), 'dd MMM yyyy') : '-'}</span>
+            <span>{project.tanggal_mulai ? format(new Date(project.tanggal_mulai), 'dd MMM yyyy') : '-'} - {project.tanggal_selesai ? format(new Date(project.tanggal_selesai), 'dd MMM yyyy') : '-'}</span>
           </div>
           <div className="flex items-center gap-2">
-            <span>{formatRupiah(project.nilai_pekerjaan)}</span>
+            <span className="font-medium">{formatRupiah(project.nilai_pekerjaan)}</span>
           </div>
         </div>
 
