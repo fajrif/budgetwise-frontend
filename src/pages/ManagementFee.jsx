@@ -5,17 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card'
 import { Alert, AlertDescription } from '../components/ui/alert';
 import { Lock, Calculator, TrendingUp, AlertTriangle } from 'lucide-react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../components/ui/table';
-import { format } from 'date-fns';
-import { id } from 'date-fns/locale';
 import { Badge } from '../components/ui/badge';
-
-const formatRupiah = (amount) => {
-  return new Intl.NumberFormat('id-ID', {
-    style: 'currency',
-    currency: 'IDR',
-    minimumFractionDigits: 0
-  }).format(amount || 0);
-};
 
 const ManagementFee = () => {
   const { data: projectsData = { projects: [] } } = useQuery({
@@ -108,7 +98,7 @@ const ManagementFee = () => {
           </div>
           <div>
             <h1 className="text-2xl font-bold text-slate-900">Management Fee</h1>
-            <p className="text-slate-500 mt-1">Perhitungan internal management fee per proyek</p>
+            <p className="text-slate-500 font-normal mt-1">Perhitungan internal management fee per proyek</p>
           </div>
           <div className="ml-auto flex items-center gap-2 text-orange-600">
             <Lock className="w-5 h-5" />
@@ -183,7 +173,7 @@ const ManagementFee = () => {
                     {feeData.map((item, index) => (
                       <TableRow key={index}>
                         <TableCell className="font-medium">
-                          {format(new Date(item.month + '-01'), 'MMMM yyyy', { locale: id })}
+                          {formatDate(item.month + '-01', 'MMMM yyyy')}
                         </TableCell>
                         <TableCell>
                           <div>

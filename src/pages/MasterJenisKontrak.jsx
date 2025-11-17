@@ -99,7 +99,7 @@ const MasterJenisKontrak = () => {
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
           <div>
             <h1 className="text-2xl font-bold text-slate-900">Master Jenis Kontrak</h1>
-            <p className="text-slate-500 mt-1">Kelola jenis kategori kontrak</p>
+            <p className="text-slate-500 font-normal mt-1">Kelola jenis kategori kontrak</p>
           </div>
         </div>
 

@@ -156,7 +156,7 @@ const ProjectForm = ({ project, clients, contractTypes, onSubmit, onCancel, isSu
                     onValueChange={onChange}
                   >
                     <SelectTrigger>
-                      <SelectValue placeholder="Select a Client" />
+                      <SelectValue placeholder="Pilih Client" />
                     </SelectTrigger>
                     <SelectContent>
                       {/* Map over your fetched clients data */}

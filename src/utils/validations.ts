@@ -67,4 +67,14 @@ export const projectSchema = z.object({
   path: ["management_fee"],
 });
 
-export type Project = z.infer<typeof projectSchema>;
+export const transactionSchema = z.object({
+  id: z.string().optional(),
+  project_id: z.string().uuid("Invalid project ID format").min(1, "Project is required"),
+  tanggal_transaksi: z.preprocess((val) => toISOString(val as string), z.string().min(1, "Tanggal transaksi required")),
+  tanggal_po_tagihan: z.preprocess((val) => toISOString(val as string), z.string().nullable().optional()),
+  cost_type_id: z.string().uuid("Invalid cost type ID format").min(1, "Jenis Biaya is required"),
+  jumlah_realisasi: z.preprocess((v) => Number(v), z.number().min(100000, "Jumlah realisasi harus minimal 100.000").positive("Jumlah realisasi harus positif")),
+  deskripsi_realisasi: z.string().min(1, "Deskripsi required"),
+  jumlah_tenaga_kerja: z.preprocess((v) => Number(v), z.number().nullable().optional()),
+  bukti_transaksi_url: z.string().nullable().optional(),
+});

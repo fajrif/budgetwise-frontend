@@ -113,7 +113,7 @@ const Projects = () => {
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
           <div>
             <h1 className="text-2xl font-bold text-slate-900">Manajemen Proyek</h1>
-            <p className="text-slate-500 mt-1">Kelola semua data proyek dan kontrak</p>
+            <p className="text-slate-500 font-normal mt-1">Kelola semua data proyek dan kontrak</p>
           </div>
           <Button
             onClick={() => {

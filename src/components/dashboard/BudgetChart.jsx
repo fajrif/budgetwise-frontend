@@ -1,17 +1,10 @@
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
-import { format, parseISO } from 'date-fns';
-import { id } from 'date-fns/locale';
+import { parseISO } from 'date-fns';
+import { formatRupiah, formatDate } from '@/utils/formatters';
 
 const BudgetChart = ({ budgetData, transactionData }) => {
-  const formatRupiah = (amount) => {
-    return new Intl.NumberFormat('id-ID', {
-      style: 'currency',
-      currency: 'IDR',
-      minimumFractionDigits: 0
-    }).format(amount);
-  };
 
   const prepareMonthlyData = () => {
     const monthlyMap = {};
@@ -19,15 +12,15 @@ const BudgetChart = ({ budgetData, transactionData }) => {
     // Sum up budget by month
     budgetData.forEach(item => {
       if (!item.periode_bulan) return;
-      
+
       if (!monthlyMap[item.periode_bulan]) {
-        monthlyMap[item.periode_bulan] = { 
-          month: item.periode_bulan, 
-          anggaran: 0, 
-          realisasi: 0 
+        monthlyMap[item.periode_bulan] = {
+          month: item.periode_bulan,
+          anggaran: 0,
+          realisasi: 0
         };
       }
-      
+
       if (item.is_parent || !item.parent_budget_id) {
         monthlyMap[item.periode_bulan].anggaran += item.total_anggaran || item.jumlah_anggaran || 0;
       }
@@ -37,10 +30,10 @@ const BudgetChart = ({ budgetData, transactionData }) => {
     transactionData.forEach(tx => {
       if (tx.bulan_realisasi) {
         if (!monthlyMap[tx.bulan_realisasi]) {
-          monthlyMap[tx.bulan_realisasi] = { 
-            month: tx.bulan_realisasi, 
-            anggaran: 0, 
-            realisasi: 0 
+          monthlyMap[tx.bulan_realisasi] = {
+            month: tx.bulan_realisasi,
+            anggaran: 0,
+            realisasi: 0
           };
         }
         monthlyMap[tx.bulan_realisasi].realisasi += tx.jumlah_realisasi || 0;
@@ -52,7 +45,7 @@ const BudgetChart = ({ budgetData, transactionData }) => {
       .slice(-12);
 
     return sortedData.map(item => ({
-      month: format(parseISO(item.month + '-01'), 'MMM yy', { locale: id }),
+      month: formatDate(parseISO(item.month + '-01'), 'MMM yy'),
       'Anggaran (Juta)': Math.round(item.anggaran / 1000000),
       'Realisasi (Juta)': Math.round(item.realisasi / 1000000),
       anggaranRaw: item.anggaran,
@@ -91,12 +84,12 @@ const BudgetChart = ({ budgetData, transactionData }) => {
         <ResponsiveContainer width="100%" height={300}>
           <BarChart data={chartData}>
             <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
-            <XAxis 
-              dataKey="month" 
+            <XAxis
+              dataKey="month"
               stroke="#64748b"
               style={{ fontSize: '12px' }}
             />
-            <YAxis 
+            <YAxis
               stroke="#64748b"
               style={{ fontSize: '12px' }}
               label={{ value: 'Jutaan Rupiah', angle: -90, position: 'insideLeft', style: { fontSize: '12px' } }}

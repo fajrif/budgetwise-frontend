@@ -5,19 +5,11 @@ import { Button } from '../ui/button';
 import { Progress } from '../ui/progress';
 import { Building2, Calendar, ExternalLink, Pencil } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { format } from 'date-fns';
 import { getStatusColor } from '@/utils/ProjectHelper';
+import { formatRupiah, formatDate } from '@/utils/formatters';
 
 const ProjectCard = ({ project, budgetItems, transactions, onEdit }) => {
   const navigate = useNavigate();
-
-  const formatRupiah = (amount) => {
-    return new Intl.NumberFormat('id-ID', {
-      style: 'currency',
-      currency: 'IDR',
-      minimumFractionDigits: 0
-    }).format(amount);
-  };
 
   const projectBudgetItems = budgetItems.filter(b => b.project_id === project.id);
   const budget = projectBudgetItems
@@ -51,7 +43,7 @@ const ProjectCard = ({ project, budgetItems, transactions, onEdit }) => {
           </div>
           <div className="flex items-center gap-2">
             <Calendar className="w-4 h-4" />
-            <span>{project.tanggal_mulai ? format(new Date(project.tanggal_mulai), 'dd MMM yyyy') : '-'} - {project.tanggal_selesai ? format(new Date(project.tanggal_selesai), 'dd MMM yyyy') : '-'}</span>
+            <span>{project.tanggal_mulai ? formatDate(project.tanggal_mulai) : '-'} - {project.tanggal_selesai ? formatDate(project.tanggal_selesai) : '-'}</span>
           </div>
           <div className="flex items-center gap-2">
             <span className="font-medium">{formatRupiah(project.nilai_pekerjaan)}</span>

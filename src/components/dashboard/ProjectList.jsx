@@ -5,17 +5,10 @@ import { Button } from '../ui/button';
 import { Progress } from '../ui/progress';
 import { ExternalLink, AlertTriangle } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { formatRupiah } from '@/utils/formatters';
 
 const ProjectList = ({ projects, budgetData, transactionData, isLoading }) => {
   const navigate = useNavigate();
-
-  const formatRupiah = (amount) => {
-    return new Intl.NumberFormat('id-ID', {
-      style: 'currency',
-      currency: 'IDR',
-      minimumFractionDigits: 0
-    }).format(amount);
-  };
 
   const getProjectMetrics = (project) => {
     const projectBudgetItems = budgetData.filter(b => b.project_id === project.id);
