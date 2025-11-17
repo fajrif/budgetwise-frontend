@@ -37,7 +37,6 @@ export const formatNumber = (num) => {
 };
 
 export const formatDate = (date, fmt='dd MMM yyyy') => {
-  console.log(date);
   return format(new Date(date), fmt, { locale: id })
 };
 
