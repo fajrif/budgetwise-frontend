@@ -8,19 +8,16 @@ import { useNavigate } from 'react-router-dom';
 import { getStatusColor } from '@/utils/ProjectHelper';
 import { formatRupiah, formatDate } from '@/utils/formatters';
 
-const ProjectCard = ({ project, budgetItems, transactions, onEdit }) => {
+const ProjectCard = ({ project, transactions, onEdit }) => {
   const navigate = useNavigate();
-
-  const projectBudgetItems = budgetItems.filter(b => b.project_id === project.id);
-  const budget = projectBudgetItems
-    .filter(b => b.is_parent || !b.parent_budget_id)
-    .reduce((sum, b) => sum + (b.total_anggaran || b.jumlah_anggaran || 0), 0);
 
   const actual = transactions
     .filter(t => t.project_id === project.id)
     .reduce((sum, t) => sum + (t.jumlah_realisasi || 0), 0);
 
-  const percentage = budget > 0 ? (actual / budget) * 100 : 0;
+  const budget = project.nilai_pekerjaan - actual;
+
+  const percentage = budget > 0 ? (actual / project.nilai_pekerjaan) * 100 : 0;
 
   return (
     <Card className="hover:shadow-xl transition-all">
@@ -58,7 +55,7 @@ const ProjectCard = ({ project, budgetItems, transactions, onEdit }) => {
           <Progress value={percentage} className="h-2" />
           <div className="flex justify-between text-xs text-slate-500">
             <span>{formatRupiah(actual)}</span>
-            <span>{formatRupiah(budget)}</span>
+            <span className={ actual > 0 ? percentage >= 90 ? 'text-red-500' : percentage >= 80 ? 'text-orange-500' : 'text-green-500' : ''}>{formatRupiah(budget)}</span>
           </div>
         </div>
 

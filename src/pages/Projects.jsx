@@ -23,14 +23,6 @@ const Projects = () => {
     }
   });
 
-  const { data: budgetData = { budget_items: [] } } = useQuery({
-    queryKey: ['budgetItems'],
-    queryFn: async () => {
-      const response = await api.get('/budget-items');
-      return response.data;
-    }
-  });
-
   const { data: transactionsData = { transactions: [] } } = useQuery({
     queryKey: ['transactions'],
     queryFn: async () => {
@@ -171,7 +163,6 @@ const Projects = () => {
               <ProjectCard
                 key={project.id}
                 project={project}
-                budgetItems={budgetData.budget_items}
                 transactions={transactionsData.transactions}
                 onEdit={handleEdit}
               />

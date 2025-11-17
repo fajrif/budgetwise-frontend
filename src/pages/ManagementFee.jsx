@@ -6,6 +6,7 @@ import { Alert, AlertDescription } from '../components/ui/alert';
 import { Lock, Calculator, TrendingUp, AlertTriangle } from 'lucide-react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../components/ui/table';
 import { Badge } from '../components/ui/badge';
+import { formatRupiah, formatDate } from '@/utils/formatters';
 
 const ManagementFee = () => {
   const { data: projectsData = { projects: [] } } = useQuery({
@@ -31,27 +32,29 @@ const ManagementFee = () => {
       if (!project.tarif_management_fee_persen) return;
 
       const projectTransactions = transactionsData.transactions.filter(t => t.project_id === project.id);
-      
+
       const monthlyData = projectTransactions.reduce((acc, tx) => {
         if (!tx.bulan_realisasi) return acc;
-        
+
+        const strBLTH = `${tx.bulan_realisasi.slice(-4)}-${tx.bulan_realisasi.substring(0,2)}-01`;
         if (!acc[tx.bulan_realisasi]) {
           acc[tx.bulan_realisasi] = {
-            month: tx.bulan_realisasi,
+            month: strBLTH,
+            blth: tx.bulan_realisasi,
             totalRealisasi: 0,
             transactions: []
           };
         }
-        
+
         acc[tx.bulan_realisasi].totalRealisasi += tx.jumlah_realisasi || 0;
         acc[tx.bulan_realisasi].transactions.push(tx);
-        
+
         return acc;
       }, {});
 
       Object.values(monthlyData).forEach(data => {
         const manFee = (project.tarif_management_fee_persen / 100) * data.totalRealisasi;
-        
+
         feeData.push({
           projectId: project.id,
           projectName: project.judul_pekerjaan,
@@ -173,12 +176,12 @@ const ManagementFee = () => {
                     {feeData.map((item, index) => (
                       <TableRow key={index}>
                         <TableCell className="font-medium">
-                          {formatDate(item.month + '-01', 'MMMM yyyy')}
+                          {formatDate(item.month, 'MMMM yyyy')}
                         </TableCell>
                         <TableCell>
                           <div>
                             <p className="font-medium text-sm">{item.projectName}</p>
-                            <p className="text-xs text-slate-500">{item.noSp2k}</p>
+                            <p className="text-xs text-slate-500">No.SP2K: {item.noSp2k}</p>
                           </div>
                         </TableCell>
                         <TableCell className="text-center">
