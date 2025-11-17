@@ -1,16 +1,9 @@
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
 import { Wallet, TrendingUp, AlertCircle, FolderKanban } from 'lucide-react';
+import { formatRupiah } from '@/utils/formatters';
 
 const ProjectSummaryCards = ({ metrics, isLoading }) => {
-  const formatRupiah = (amount) => {
-    return new Intl.NumberFormat('id-ID', {
-      style: 'currency',
-      currency: 'IDR',
-      minimumFractionDigits: 0
-    }).format(amount);
-  };
-
   const cards = [
     {
       title: 'Total Anggaran',

@@ -6,18 +6,10 @@ import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card'
 import { Button } from '../components/ui/button';
 import { Badge } from '../components/ui/badge';
 import { Progress } from '../components/ui/progress';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../components/ui/table';
 import { ArrowLeft, Building2, Calendar, User } from 'lucide-react';
-import { format } from 'date-fns';
-import { id } from 'date-fns/locale';
+import { formatRupiah, formatDate } from '@/utils/formatters';
 import { getStatusColor } from '@/utils/ProjectHelper';
-
-const formatRupiah = (amount) => {
-  return new Intl.NumberFormat('id-ID', {
-    style: 'currency',
-    currency: 'IDR',
-    minimumFractionDigits: 0
-  }).format(amount || 0);
-};
 
 const ProjectDetail = () => {
   const navigate = useNavigate();
@@ -155,7 +147,7 @@ const ProjectDetail = () => {
                 <p className="text-sm text-slate-500">Tanggal Perjanjian</p>
                 <p className="font-normal flex items-center gap-2">
                   <Calendar className="w-4 h-4" />
-                  {project.tanggal_perjanjian && format(new Date(project.tanggal_perjanjian), 'dd MMM yyyy', { locale: id })}
+                  {project.tanggal_perjanjian && formatDate(project.tanggal_perjanjian)}
                 </p>
               </div>
               <div>
@@ -191,27 +183,27 @@ const ProjectDetail = () => {
           </CardContent>
         </Card>
         <Card>
-          <CardContent>
-            <table className="border-collapse border border-gray-400 text-sm w-full mt-6">
-              <thead>
-                <tr className="text-start">
-                  <th className="border border-gray-200 font-medium text-slate-500 text-start p-2">No.SP2K</th>
-                  <th className="border border-gray-200 font-medium text-slate-500 text-start p-2">No.Perjanjian</th>
-                  <th className="border border-gray-200 font-medium text-slate-500 text-start p-2">No.Amandemen</th>
-                  <th className="border border-gray-200 font-medium text-slate-500 text-start p-2">Tanggal Mulai</th>
-                  <th className="border border-gray-200 font-medium text-slate-500 text-start p-2">Tanggal Selesai</th>
-                </tr>
-              </thead>
-                <tbody>
-                  <tr>
-                    <td className="border border-gray-200 font-normal p-2">{project.no_sp2k}</td>
-                    <td className="border border-gray-200 font-normal p-2">{project.no_perjanjian || '-'}</td>
-                    <td className="border border-gray-200 font-normal p-2">{project.no_amandemen || '-'}</td>
-                    <td className="border border-gray-200 font-normal p-2">{project.tanggal_mulai && format(new Date(project.tanggal_mulai), 'dd MMM yyyy', { locale: id })}</td>
-                    <td className="border border-gray-200 font-normal p-2">{project.tanggal_selesai && format(new Date(project.tanggal_selesai), 'dd MMM yyyy', { locale: id })}</td>
-                </tr>
-              </tbody>
-            </table>
+          <CardContent className="py-4">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>No.SP2K</TableHead>
+                  <TableHead>No.Perjanjian</TableHead>
+                  <TableHead>No.Amandemen</TableHead>
+                  <TableHead>Tanggal Mulai</TableHead>
+                  <TableHead>Tanggal Selesai</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                <TableRow>
+                  <TableCell>{project.no_sp2k}</TableCell>
+                  <TableCell>{project.no_perjanjian || '-'}</TableCell>
+                  <TableCell>{project.no_amandemen || '-'}</TableCell>
+                  <TableCell>{project.tanggal_mulai && formatDate(project.tanggal_mulai)}</TableCell>
+                  <TableCell>{project.tanggal_selesai && formatDate(project.tanggal_selesai)}</TableCell>
+                </TableRow>
+              </TableBody>
+            </Table>
           </CardContent>
         </Card>
       </div>

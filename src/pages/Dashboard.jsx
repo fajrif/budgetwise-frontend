@@ -5,7 +5,7 @@ import { Link } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
 import { Button } from '../components/ui/button';
 import { Plus, Wallet, TrendingUp, AlertCircle, FolderKanban } from 'lucide-react';
-import { formatRupiah } from '../components/shared/formatters';
+import { formatRupiah } from '@/utils/formatters';
 
 const Dashboard = () => {
   const { data: projectsData = { projects: [] } } = useQuery({
@@ -111,7 +111,7 @@ const Dashboard = () => {
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
           <div>
             <h1 className="text-2xl font-bold text-slate-900">Dashboard</h1>
-            <p className="text-slate-500 mt-1">Monitoring Anggaran & Realisasi Proyek</p>
+            <p className="text-slate-500 font-normal mt-1">Monitoring Anggaran & Realisasi Proyek</p>
           </div>
           <Link to="/projects">
             <Button className="bg-blue-600 hover:bg-blue-700 shadow-lg">

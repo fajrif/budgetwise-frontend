@@ -1,4 +1,6 @@
 // Utility functions for formatting data
+import { format } from 'date-fns';
+import { id } from 'date-fns/locale';
 
 export const formatRupiah = (amount) => {
   if (amount === null || amount === undefined) return 'Rp 0';
@@ -32,6 +34,10 @@ export const formatRupiahShort = (amount) => {
 export const formatNumber = (num) => {
   if (num === null || num === undefined) return '0';
   return new Intl.NumberFormat('id-ID').format(num);
+};
+
+export const formatDate = (date, fmt='dd MMM yyyy') => {
+  return format(new Date(date), fmt, { locale: id })
 };
 
 export const calculateSLAStatus = (tanggalPO, tanggalTransaksi) => {

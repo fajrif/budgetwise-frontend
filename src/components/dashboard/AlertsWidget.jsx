@@ -7,14 +7,6 @@ import { useNavigate } from 'react-router-dom';
 const AlertsWidget = ({ alertProjects, budgetData, transactionData }) => {
   const navigate = useNavigate();
 
-  const formatRupiah = (amount) => {
-    return new Intl.NumberFormat('id-ID', {
-      style: 'currency',
-      currency: 'IDR',
-      minimumFractionDigits: 0
-    }).format(amount);
-  };
-
   return (
     <Card className="border-none shadow-lg bg-gradient-to-br from-orange-50 to-red-50">
       <CardHeader className="border-b border-orange-100">
