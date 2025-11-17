@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import React, { useEffect } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useQuery } from '@tanstack/react-query';
@@ -10,11 +10,12 @@ import { Button } from '../ui/button';
 import { Textarea } from '../ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
 import { projectSchema } from "@/utils/validations";
+import { formatRupiah } from "@/utils/formatters";
 
 const ProjectForm = ({ project, clients, contractTypes, onSubmit, onCancel, isSubmitting }) => {
 
   // --- React Hook Form Setup ---
-  const { register, control, handleSubmit, formState: { errors }, reset } = useForm({
+  const { register, control, handleSubmit, formState: { errors }, watch, reset } = useForm({
     resolver: zodResolver(projectSchema),
     defaultValues: project || {
       no_sp2k: '',
@@ -24,7 +25,7 @@ const ProjectForm = ({ project, clients, contractTypes, onSubmit, onCancel, isSu
       judul_pekerjaan: '',
       tanggal_mulai: '',
       tanggal_selesai: '',
-      nilai_pekerjaan: '',
+      nilai_pekerjaan: 0,
       management_fee: '',
       tarif_management_fee_persen: 0,
       client_id: '',
@@ -49,6 +50,20 @@ const ProjectForm = ({ project, clients, contractTypes, onSubmit, onCancel, isSu
       reset(formattedData);
     }
   }, [project, reset]); // 'reset' dan 'project' adalah dependency
+
+  const watchedNilaiPekerjaan = watch("nilai_pekerjaan");
+  const watchedTarifPersen = watch("tarif_management_fee_persen");
+
+  // 🔥🔥 Lakukan perhitungan derived state (computed value) 🔥🔥
+  const calculatedFee = React.useMemo(() => {
+      const nilaiPekerjaan = parseFloat(watchedNilaiPekerjaan) || 0;
+      const tarifPersen = parseFloat(watchedTarifPersen) || 0;
+
+      if (nilaiPekerjaan > 0 && tarifPersen > 0) {
+        return (nilaiPekerjaan * tarifPersen) / 100;
+      }
+      return 0;
+    }, [watchedNilaiPekerjaan, watchedTarifPersen]); // Dependensi perhitungan
 
   const onHandleSubmit = async (data) => {
     console.log(data);
@@ -241,6 +256,11 @@ const ProjectForm = ({ project, clients, contractTypes, onSubmit, onCancel, isSu
                 {...register("tarif_management_fee_persen")}
               />
               {errors.tarif_management_fee_persen && <p className="text-red-500 text-sm">{errors.tarif_management_fee_persen.message}</p>}
+              <div className="mt-4 px-4 py-2 bg-blue-100 border border-blue-400 text-blue-700 rounded-lg text-sm">
+                <p className="font-base">Perkiraan Nilai Management Fee:</p>
+                <p className="font-semibold">{formatRupiah(calculatedFee)}</p>
+                {calculatedFee === 0 && <p className='text-slate-500 mt-1 italic text-xs'>Masukkan nilai pekerjaan dan persentase untuk kalkulasi.</p>}
+              </div>
             </div>
           </div>
         </CardContent>
