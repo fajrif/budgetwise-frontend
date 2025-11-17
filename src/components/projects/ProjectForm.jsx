@@ -4,6 +4,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useQuery } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '../ui/card';
 import { Input } from '../ui/input';
+import { CurrencyInput } from '../ui/CurrencyInput';
 import { Label } from '../ui/label';
 import { Button } from '../ui/button';
 import { Textarea } from '../ui/textarea';
@@ -25,7 +26,7 @@ const ProjectForm = ({ project, clients, contractTypes, onSubmit, onCancel, isSu
       tanggal_selesai: '',
       nilai_pekerjaan: '',
       management_fee: '',
-      tarif_management_fee_persen: '',
+      tarif_management_fee_persen: 0,
       client_id: '',
       contract_type_id: '',
       status_kontrak: 'Active'
@@ -36,9 +37,10 @@ const ProjectForm = ({ project, clients, contractTypes, onSubmit, onCancel, isSu
   useEffect(() => {
     if (project) {
       // 🔥 PENTING: Format ulang tanggal sebelum reset()
+      // Konversi ISO string menjadi YYYY-MM-DD untuk input type="date"
       const formattedData = {
         ...project,
-        // Konversi ISO string menjadi YYYY-MM-DD untuk input type="date"
+        tarif_management_fee_persen: project.tarif_management_fee_persen > 0 ? project.tarif_management_fee_persen : null,
         tanggal_mulai: project.tanggal_mulai ? project.tanggal_mulai.split('T')[0] : '',
         tanggal_selesai: project.tanggal_selesai ? project.tanggal_selesai.split('T')[0] : '',
         tanggal_perjanjian: project.tanggal_perjanjian ? project.tanggal_perjanjian.split('T')[0] : '',
@@ -134,11 +136,10 @@ const ProjectForm = ({ project, clients, contractTypes, onSubmit, onCancel, isSu
 
             <div className="space-y-2">
               <Label htmlFor="nilai_pekerjaan">Nilai Pekerjaan (Rp) *</Label>
-              <Input
-                id="nilai_pekerjaan"
-                type="number"
+              <CurrencyInput
+                name="nilai_pekerjaan"
+                control={control}
                 placeholder="Contoh: Rp.100,000,000"
-                {...register("nilai_pekerjaan")}
               />
               {errors.nilai_pekerjaan && <p className="text-red-500 text-sm">{errors.nilai_pekerjaan.message}</p>}
             </div>
@@ -223,11 +224,10 @@ const ProjectForm = ({ project, clients, contractTypes, onSubmit, onCancel, isSu
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="management_fee">Management Fee (Rp)</Label>
-              <Input
-                id="management_fee"
-                type="number"
-                {...register("management_fee", { valueAsNumber: true })}
+              <Label htmlFor="management_fee">Management Fee (Rp.)</Label>
+              <CurrencyInput
+                name="management_fee"
+                control={control}
               />
               {errors.management_fee && <p className="text-red-500 text-sm">{errors.management_fee.message}</p>}
             </div>
@@ -238,7 +238,7 @@ const ProjectForm = ({ project, clients, contractTypes, onSubmit, onCancel, isSu
                 id="tarif_management_fee_persen"
                 type="number"
                 step="0.01"
-                {...register("tarif_management_fee_persen", { valueAsNumber: true })}
+                {...register("tarif_management_fee_persen")}
               />
               {errors.tarif_management_fee_persen && <p className="text-red-500 text-sm">{errors.tarif_management_fee_persen.message}</p>}
             </div>

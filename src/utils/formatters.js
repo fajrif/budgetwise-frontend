@@ -37,6 +37,7 @@ export const formatNumber = (num) => {
 };
 
 export const formatDate = (date, fmt='dd MMM yyyy') => {
+  console.log(date);
   return format(new Date(date), fmt, { locale: id })
 };
 
@@ -78,4 +79,15 @@ export const getSLAColor = (status) => {
     'unknown': 'text-slate-400'
   };
   return colors[status] || 'text-slate-400';
+};
+
+export const getSLABgColor = (status) => {
+  const _default = 'bg-slate-50 text-slate-700';
+  const colors = {
+    'ontime': 'bg-green-50 text-green-700',
+    'h+1': 'bg-blue-50 text-blue-700',
+    'late': 'bg-red-50 text-red-700',
+    'unknown': 'bg-slate-50 text-slate-700'
+  };
+  return colors[status] || _default;
 };

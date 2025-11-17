@@ -5,6 +5,7 @@ import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
+import { CurrencyInput } from '../components/ui/CurrencyInput';
 import { Label } from '../components/ui/label';
 import { Badge } from '../components/ui/badge';
 import { Textarea } from '../components/ui/textarea';
@@ -15,7 +16,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '../components/ui/tabs'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../components/ui/table';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '../components/ui/dialog';
 import { Plus, FileText, Trash2, Search, Filter, Users, Pencil } from 'lucide-react';
-import { getSLALabel, getSLAColor, calculateSLAStatus, formatRupiah, formatDate } from '@/utils/formatters';
+import { getSLALabel, getSLAColor, getSLABgColor, calculateSLAStatus, formatRupiah, formatDate } from '@/utils/formatters';
 import { transactionSchema } from "@/utils/validations";
 
 const Transactions = () => {
@@ -310,9 +311,9 @@ const Transactions = () => {
                             </div>
                           </TableCell>
                           <TableCell className="text-center">
-                            <span className={`text-sm font-medium ${getSLAColor(slaStatus)}`}>
+                            <Badge variant="larger" className={getSLABgColor(slaStatus)}>
                               {getSLALabel(slaStatus)}
-                            </span>
+                            </Badge>
                           </TableCell>
                           <TableCell>
                             <div className="flex gap-1">
@@ -376,7 +377,7 @@ const Transactions = () => {
                       <SelectContent>
                         {projectsData.projects.map((project) => (
                           <SelectItem key={project.id} value={project.id}>
-                            {project.judul_pekerjaan}
+                            <span className="font-medium">{project.judul_pekerjaan}</span> <span className="font-medium text-blue-500 ms-2">[Fee: {project.tarif_management_fee_persen}%]</span>
                           </SelectItem>
                         ))}
                       </SelectContent>
@@ -424,7 +425,7 @@ const Transactions = () => {
                       <SelectContent>
                         {costTypesData.cost_types.map((ct) => (
                           <SelectItem key={ct.id} value={ct.id}>
-                            {ct.nama_biaya}
+                            <span className="font-medium">{ct.kode}</span> - {ct.nama_biaya}
                           </SelectItem>
                         ))}
                       </SelectContent>
@@ -446,10 +447,9 @@ const Transactions = () => {
 
               <div className="space-y-2">
                 <Label htmlFor="jumlah_realisasi">Jumlah Realisasi (Rp) *</Label>
-                <Input
-                  id="jumlah_realisasi"
-                  type="number"
-                  {...register("jumlah_realisasi", { valueAsNumber: true })}
+                <CurrencyInput
+                  name="jumlah_realisasi"
+                  control={control}
                 />
                 {errors.jumlah_realisasi && <p className="text-red-500 text-sm">{errors.jumlah_realisasi.message}</p>}
               </div>
