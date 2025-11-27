@@ -16,9 +16,13 @@ import { Textarea } from "@/components/ui/textarea";
 import { ArrowLeft, Building2, Calendar, User, Plus, Eye, Pencil, Trash2, Upload } from 'lucide-react';
 import { formatRupiah, formatDate } from '@/utils/formatters';
 import { getStatusColor } from '@/utils/ProjectHelper';
-import ProjectStats from "@/components/projects/ProjectStats";
-import BudgetTrendChart from "@/components/projects/BudgetTrendChart";
-import PaymentSLAChart from "@/components/projects/PaymentSLAChart";
+import ProjectStats from "@/components/dashboard/ProjectStats";
+import BudgetTrendChart from "@/components/dashboard/BudgetTrendChart";
+import PaymentSLAChart from "@/components/dashboard/PaymentSLAChart";
+import ProjectCardSummary from '@/components/dashboard/ProjectCardSummary';
+import ViewTransactionDialog from '@/components/dialogs/ViewTransactionDialog';
+import AddEditTransactionDialog from '@/components/dialogs/AddEditTransactionDialog';
+
 
 const ProjectDetail = () => {
   const navigate = useNavigate();
@@ -145,31 +149,13 @@ const ProjectDetail = () => {
     },
   });
 
-  const createTransactionMutation = useMutation({
-    mutationFn: (data) => base44.entities.Transaction.create(data),
+  const deleteMutation = useMutation({
+    mutationFn: async (id) => {
+      await api.delete(`/transactions/${id}`);
+    },
     onSuccess: () => {
       queryClient.invalidateQueries(['transactions']);
-      setShowTransactionDialog(false);
-      setEditingTransaction(null);
-      resetTransactionForm();
-    },
-  });
-
-  const updateTransactionMutation = useMutation({
-    mutationFn: ({ id, data }) => base44.entities.Transaction.update(id, data),
-    onSuccess: () => {
-      queryClient.invalidateQueries(['transactions']);
-      setShowTransactionDialog(false);
-      setEditingTransaction(null);
-      resetTransactionForm();
-    },
-  });
-
-  const deleteTransactionMutation = useMutation({
-    mutationFn: (id) => base44.entities.Transaction.delete(id),
-    onSuccess: () => {
-      queryClient.invalidateQueries(['transactions']);
-    },
+    }
   });
 
   const resetBudgetForm = () => {
@@ -179,19 +165,6 @@ const ProjectDetail = () => {
       kategori_anggaran: 'monthly',
       total_anggaran: '',
       deskripsi_anggaran: ''
-    });
-  };
-
-  const resetTransactionForm = () => {
-    setTransactionForm({
-      tanggal_transaksi: '',
-      tanggal_po_tagihan: '',
-      bulan_realisasi: '',
-      cost_type_id: '',
-      deskripsi_realisasi: '',
-      jumlah_realisasi: '',
-      jumlah_tenaga_kerja: '',
-      bukti_transaksi_url: ''
     });
   };
 
@@ -214,16 +187,6 @@ const ProjectDetail = () => {
 
   const handleEditTransaction = (transaction) => {
     setEditingTransaction(transaction);
-    setTransactionForm({
-      tanggal_transaksi: transaction.tanggal_transaksi,
-      tanggal_po_tagihan: transaction.tanggal_po_tagihan || '',
-      bulan_realisasi: transaction.bulan_realisasi,
-      cost_type_id: transaction.cost_type_id,
-      deskripsi_realisasi: transaction.deskripsi_realisasi || '',
-      jumlah_realisasi: transaction.jumlah_realisasi.toString(),
-      jumlah_tenaga_kerja: transaction.jumlah_tenaga_kerja?.toString() || '',
-      bukti_transaksi_url: transaction.bukti_transaksi_url || ''
-    });
     setShowTransactionDialog(true);
   };
 
@@ -240,6 +203,14 @@ const ProjectDetail = () => {
     } finally {
       setUploadingFile(false);
     }
+  };
+
+  const finishSubmit = (isQuery=true) => {
+    if(isQuery) {
+      queryClient.invalidateQueries(['transactions']);
+    }
+    setShowTransactionDialog(false);
+    setEditingTransaction(null);
   };
 
   const handleSubmitBudget = async (e) => {
@@ -367,11 +338,6 @@ const ProjectDetail = () => {
 
   const parentBudgets = budgetItemsData.budget_items.filter(b => b.is_parent);
 
-  const totalActual = transactionsData.transactions.reduce((sum, t) => sum + (t.jumlah_realisasi || 0), 0);
-  const totalBudget = project.nilai_pekerjaan || 0;
-  const percentage = totalBudget > 0 ? (totalActual / totalBudget) * 100 : 0;
-  const remaining = totalBudget - totalActual;
-
   const getMonthlyActual = (periodeBulan, costTypeId) => {
     return transactionsData.transactions
       .filter(t => t.bulan_realisasi === periodeBulan && t.cost_type_id === costTypeId)
@@ -397,44 +363,7 @@ const ProjectDetail = () => {
           <Badge className={`${getStatusColor(project.status_kontrak)} text-sm py-2 px-4 ml-auto`}>{project.status_kontrak}</Badge>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-          <Card>
-            <CardHeader className="pb-3">
-              <CardTitle className="text-sm">Total Anggaran</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{formatRupiah(totalBudget)}</div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="pb-3">
-              <CardTitle className="text-sm">Total Realisasi</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-green-600">{formatRupiah(totalActual)}</div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="pb-3">
-              <CardTitle className="text-sm">Sisa Anggaran</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-purple-600">{formatRupiah(remaining)}</div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="pb-3">
-              <CardTitle className="text-sm">Penyerapan</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{percentage.toFixed(1)}%</div>
-              <Progress value={percentage} className="h-2 mt-2" />
-            </CardContent>
-          </Card>
-        </div>
+        <ProjectCardSummary project={project} transactions={transactionsData.transactions} />
 
         <Card>
           <CardHeader>
@@ -823,7 +752,6 @@ const ProjectDetail = () => {
                   <Button
                     onClick={() => {
                       setEditingTransaction(null);
-                      resetTransactionForm();
                       setShowTransactionDialog(true);
                     }}
                     className="bg-green-600 hover:bg-green-700"
@@ -1065,349 +993,24 @@ const ProjectDetail = () => {
         </DialogContent>
       </Dialog>
 
-      {/* Transaction Dialog */}
-      <Dialog open={showTransactionDialog} onOpenChange={(open) => {
-        setShowTransactionDialog(open);
-        if (!open) {
-          setEditingTransaction(null);
-          resetTransactionForm();
-        }
-      }}>
-        <DialogContent className="max-w-2xl">
-          <DialogHeader>
-            <DialogTitle>{editingTransaction ? 'Edit Transaksi' : 'Tambah Transaksi Baru'}</DialogTitle>
-          </DialogHeader>
-          <form onSubmit={async (e) => {
-            e.preventDefault();
-            const selectedCostType = costTypesData.cost_types.find(ct => ct.id === transactionForm.cost_type_id);
-            const data = {
-              project_id: projectId,
-              no_sp2k: project?.no_sp2k || '',
-              tanggal_transaksi: transactionForm.tanggal_transaksi,
-              tanggal_po_tagihan: transactionForm.tanggal_po_tagihan || null,
-              bulan_realisasi: transactionForm.bulan_realisasi,
-              cost_type_id: transactionForm.cost_type_id,
-              jenis_biaya_name: selectedCostType?.nama_biaya || '',
-              deskripsi_realisasi: transactionForm.deskripsi_realisasi,
-              jumlah_realisasi: parseFloat(transactionForm.jumlah_realisasi),
-              jumlah_tenaga_kerja: transactionForm.jumlah_tenaga_kerja ? parseInt(transactionForm.jumlah_tenaga_kerja) : null,
-              persentase_management_fee: project?.tarif_management_fee_persen || 0,
-              nilai_management_fee: (parseFloat(transactionForm.jumlah_realisasi) * (project?.tarif_management_fee_persen || 0)) / 100,
-              bukti_transaksi_url: transactionForm.bukti_transaksi_url || null
-            };
-
-            if (editingTransaction) {
-              updateTransactionMutation.mutate({ id: editingTransaction.id, data });
-            } else {
-              createTransactionMutation.mutate(data);
-            }
-          }}>
-            <div className="grid gap-4 py-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="tanggal_transaksi">Tanggal Transaksi *</Label>
-                  <Input
-                    id="tanggal_transaksi"
-                    type="date"
-                    value={transactionForm.tanggal_transaksi}
-                    onChange={(e) => setTransactionForm({ ...transactionForm, tanggal_transaksi: e.target.value })}
-                    required
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="bulan_realisasi">Bulan Realisasi *</Label>
-                  <Input
-                    id="bulan_realisasi"
-                    type="month"
-                    value={transactionForm.bulan_realisasi}
-                    onChange={(e) => setTransactionForm({ ...transactionForm, bulan_realisasi: e.target.value })}
-                    required
-                  />
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="cost_type_tx">Jenis Biaya *</Label>
-                <Select
-                  value={transactionForm.cost_type_id}
-                  onValueChange={(val) => setTransactionForm({ ...transactionForm, cost_type_id: val })}
-                  required
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Pilih jenis biaya" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {costTypesData.cost_types.map((ct) => (
-                      <SelectItem key={ct.id} value={ct.id}>
-                        {ct.nama_biaya} ({ct.kode})
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="deskripsi_realisasi">Deskripsi</Label>
-                <Textarea
-                  id="deskripsi_realisasi"
-                  value={transactionForm.deskripsi_realisasi}
-                  onChange={(e) => setTransactionForm({ ...transactionForm, deskripsi_realisasi: e.target.value })}
-                  placeholder="Deskripsi realisasi"
-                  rows={3}
-                />
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="jumlah_realisasi">Jumlah Realisasi (Rp) *</Label>
-                  <Input
-                    id="jumlah_realisasi"
-                    type="number"
-                    value={transactionForm.jumlah_realisasi}
-                    onChange={(e) => setTransactionForm({ ...transactionForm, jumlah_realisasi: e.target.value })}
-                    required
-                    placeholder="Contoh: 50000000"
-                  />
-                  {transactionForm.jumlah_realisasi && (
-                    <p className="text-sm text-blue-600">
-                      = {formatRupiah(transactionForm.jumlah_realisasi)}
-                    </p>
-                  )}
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="jumlah_tenaga_kerja">Jumlah Tenaga Kerja</Label>
-                  <Input
-                    id="jumlah_tenaga_kerja"
-                    type="number"
-                    value={transactionForm.jumlah_tenaga_kerja}
-                    onChange={(e) => setTransactionForm({ ...transactionForm, jumlah_tenaga_kerja: e.target.value })}
-                    placeholder="Jumlah pekerja"
-                  />
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="tanggal_po_tagihan">Tanggal PO/Tagihan</Label>
-                <Input
-                  id="tanggal_po_tagihan"
-                  type="date"
-                  value={transactionForm.tanggal_po_tagihan}
-                  onChange={(e) => setTransactionForm({ ...transactionForm, tanggal_po_tagihan: e.target.value })}
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="bukti_transaksi">Bukti Transaksi</Label>
-                <div className="space-y-2">
-                  {transactionForm.bukti_transaksi_url && (
-                    <div className="flex items-center gap-2 p-2 bg-slate-50 rounded-md border border-slate-200">
-                      <FileText className="w-4 h-4 text-slate-500" />
-                      <a 
-                        href={transactionForm.bukti_transaksi_url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-sm text-blue-600 hover:underline flex-1 truncate"
-                      >
-                        {transactionForm.bukti_transaksi_url.split('/').pop()}
-                      </a>
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => setTransactionForm({ ...transactionForm, bukti_transaksi_url: '' })}
-                        className="h-6 w-6"
-                      >
-                        <X className="w-3 h-3" />
-                      </Button>
-                    </div>
-                  )}
-                  <div className="flex gap-2">
-                    <Input
-                      id="bukti_transaksi_file"
-                      type="file"
-                      onChange={handleFileUpload}
-                      disabled={uploadingFile}
-                      className="hidden"
-                      accept="image/*,.pdf,.doc,.docx"
-                    />
-                    <Button
-                      type="button"
-                      variant="outline"
-                      onClick={() => document.getElementById('bukti_transaksi_file').click()}
-                      disabled={uploadingFile}
-                      className="flex-1"
-                    >
-                      <Upload className="w-4 h-4 mr-2" />
-                      {uploadingFile ? 'Mengupload...' : 'Upload File'}
-                    </Button>
-                    <Input
-                      type="url"
-                      value={transactionForm.bukti_transaksi_url}
-                      onChange={(e) => setTransactionForm({ ...transactionForm, bukti_transaksi_url: e.target.value })}
-                      placeholder="Atau masukkan URL..."
-                      className="flex-1"
-                    />
-                  </div>
-                  <p className="text-xs text-slate-500">Upload file atau masukkan URL bukti transaksi</p>
-                </div>
-              </div>
-            </div>
-            <DialogFooter>
-              <Button type="button" variant="outline" onClick={() => setShowTransactionDialog(false)}>
-                Batal
-              </Button>
-              <Button
-                type="submit"
-                disabled={createTransactionMutation.isPending || updateTransactionMutation.isPending}
-                className="bg-green-600 hover:bg-green-700"
-              >
-                {(createTransactionMutation.isPending || updateTransactionMutation.isPending) ? 'Menyimpan...' : editingTransaction ? 'Update' : 'Simpan'}
-              </Button>
-            </DialogFooter>
-          </form>
-        </DialogContent>
-      </Dialog>
-
       {/* View Transaction Dialog */}
-      <Dialog open={showViewDialog} onOpenChange={setShowViewDialog}>
-        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>Detail Transaksi</DialogTitle>
-          </DialogHeader>
-          {viewingTransaction && (
-            <div className="space-y-6">
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-1">
-                  <p className="text-sm text-slate-500">Tanggal Transaksi</p>
-                  <p className="font-semibold text-slate-900">
-                    {formatDate(viewingTransaction.tanggal_transaksi)}
-                  </p>
-                </div>
-                <div className="space-y-1">
-                  <p className="text-sm text-slate-500">Bulan Realisasi</p>
-                  <p className="font-semibold text-slate-900">
-                    {viewingTransaction.bulan_realisasi}
-                  </p>
-                </div>
-                <div className="space-y-1">
-                  <p className="text-sm text-slate-500">Jenis Biaya</p>
-                  <div className="flex items-center gap-2">
-                    <Badge className="bg-blue-100 text-blue-700">
-                      {getCostTypeKode(viewingTransaction.cost_type_id)}
-                    </Badge>
-                    <span className="font-semibold text-slate-900">{viewingTransaction.jenis_biaya_name}</span>
-                  </div>
-                </div>
-                <div className="space-y-1">
-                  <p className="text-sm text-slate-500">Jumlah Realisasi</p>
-                  <p className="text-2xl font-bold text-green-600">
-                    {formatRupiah(viewingTransaction.jumlah_realisasi)}
-                  </p>
-                </div>
-                {viewingTransaction.tanggal_po_tagihan && (
-                  <div className="space-y-1">
-                    <p className="text-sm text-slate-500">Tanggal PO/Tagihan</p>
-                    <p className="font-semibold text-slate-900">
-                      {formatDate(viewingTransaction.tanggal_po_tagihan, 'dd MMMM yyyy')}
-                    </p>
-                  </div>
-                )}
-                {viewingTransaction.jumlah_tenaga_kerja && (
-                  <div className="space-y-1">
-                    <p className="text-sm text-slate-500">Jumlah Tenaga Kerja</p>
-                    <p className="font-semibold text-slate-900">
-                      {viewingTransaction.jumlah_tenaga_kerja} orang
-                    </p>
-                  </div>
-                )}
-                <div className="space-y-1">
-                  <p className="text-sm text-slate-500">Management Fee</p>
-                  <p className="font-semibold text-purple-600">
-                    {formatRupiah(viewingTransaction.nilai_management_fee || 0)} ({(viewingTransaction.persentase_management_fee || 0).toFixed(2)}%)
-                  </p>
-                </div>
-                <div className="space-y-1">
-                  <p className="text-sm text-slate-500">Dibuat Oleh</p>
-                  <p className="font-semibold text-slate-900">{viewingTransaction.created_by || '-'}</p>
-                </div>
-              </div>
+      <ViewTransactionDialog
+        isOpen={showViewDialog}
+        onClose={() => {
+          setShowViewDialog(false);
+          setViewingTransaction(null);
+        }}
+        transaction={viewingTransaction}
+        onEdit={handleEditTransaction}
+        />
 
-              {viewingTransaction.deskripsi_realisasi && (
-                <div className="space-y-1">
-                  <p className="text-sm text-slate-500">Deskripsi</p>
-                  <p className="text-slate-900 bg-slate-50 p-3 rounded-md border border-slate-200">
-                    {viewingTransaction.deskripsi_realisasi}
-                  </p>
-                </div>
-              )}
-
-              {viewingTransaction.bukti_transaksi_url && (
-                <div className="space-y-2">
-                  <p className="text-sm font-semibold text-slate-700">Bukti Transaksi</p>
-                  <div className="border-2 border-slate-200 rounded-lg overflow-hidden bg-white">
-                    {viewingTransaction.bukti_transaksi_url.match(/\.(jpg|jpeg|png|gif|webp)$/i) ? (
-                      <div className="p-4">
-                        <img
-                          src={viewingTransaction.bukti_transaksi_url}
-                          alt="Bukti Transaksi"
-                          className="max-w-full h-auto rounded-lg shadow-md"
-                        />
-                      </div>
-                    ) : viewingTransaction.bukti_transaksi_url.match(/\.pdf$/i) ? (
-                      <div className="w-full h-[600px]">
-                        <iframe
-                          src={`${viewingTransaction.bukti_transaksi_url}#toolbar=0`}
-                          className="w-full h-full border-0"
-                          title="Preview PDF"
-                          type="application/pdf"
-                        />
-                      </div>
-                    ) : (
-                      <div className="p-4 flex items-center gap-3">
-                        <FileText className="w-8 h-8 text-slate-400" />
-                        <div className="flex-1">
-                          <p className="text-sm font-medium text-slate-900">
-                            {viewingTransaction.bukti_transaksi_url.split('/').pop()}
-                          </p>
-                          <p className="text-xs text-slate-500">Klik tombol di bawah untuk membuka file</p>
-                        </div>
-                      </div>
-                    )}
-                    <div className="border-t border-slate-200 p-3 bg-slate-50">
-                      <a
-                        href={viewingTransaction.bukti_transaksi_url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="inline-block"
-                      >
-                        <Button variant="outline" size="sm" className="w-full">
-                          <FileText className="w-4 h-4 mr-2" />
-                          Buka di Tab Baru
-                        </Button>
-                      </a>
-                    </div>
-                  </div>
-                </div>
-              )}
-            </div>
-          )}
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setShowViewDialog(false)}>
-              Tutup
-            </Button>
-            <Button
-              onClick={() => {
-                setShowViewDialog(false);
-                handleEditTransaction(viewingTransaction);
-              }}
-              className="bg-blue-600 hover:bg-blue-700"
-            >
-              <Pencil className="w-4 h-4 mr-2" />
-              Edit Transaksi
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      {/* Transaction Form Dialog */}
+      <AddEditTransactionDialog
+        isOpen={showTransactionDialog}
+        onClose={() => finishSubmit(false)}
+        transaction={editingTransaction}
+        onFinish={finishSubmit}
+        />
 
     </div>
   );

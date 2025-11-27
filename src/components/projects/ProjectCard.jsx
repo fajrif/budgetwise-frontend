@@ -50,7 +50,7 @@ const ProjectCard = ({ project, transactions, onEdit }) => {
         <div className="pt-3 border-t space-y-2">
           <div className="flex justify-between text-sm">
             <span>Penyerapan</span>
-            <span className="font-semibold">{percentage.toFixed(1)}%</span>
+            <span className="font-semibold">{percentage.toFixed(0)}%</span>
           </div>
           <Progress value={percentage} className="h-2" />
           <div className="flex justify-between text-xs text-slate-500">

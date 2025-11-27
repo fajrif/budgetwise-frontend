@@ -21,11 +21,11 @@ export const formatRupiahShort = (amount) => {
   const numberAmount = typeof amount === 'string' ? parseFloat(amount) : amount;
 
   if (numberAmount >= 1000000000) {
-    return `Rp ${(numberAmount / 1000000000).toFixed(1)}M`;
+    return `Rp ${(numberAmount / 1000000000).toFixed(0)}M`;
   } else if (numberAmount >= 1000000) {
-    return `Rp ${(numberAmount / 1000000).toFixed(1)}Jt`;
+    return `Rp ${(numberAmount / 1000000).toFixed(0)}Jt`;
   } else if (numberAmount >= 1000) {
-    return `Rp ${(numberAmount / 1000).toFixed(1)}Rb`;
+    return `Rp ${(numberAmount / 1000).toFixed(0)}Rb`;
   }
 
   return formatRupiah(numberAmount);

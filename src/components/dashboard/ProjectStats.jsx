@@ -2,6 +2,7 @@ import React from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { TrendingUp, TrendingDown, DollarSign, Calendar, Users, Percent } from "lucide-react";
 import { formatRupiah, formatRupiahShort } from "@/utils/formatters";
+import { getColorClasses } from '@/utils/ProjectHelper';
 
 export default function ProjectStats({ project, budgetItems, transactions }) {
   // Calculate statistics
@@ -71,18 +72,6 @@ export default function ProjectStats({ project, budgetItems, transactions }) {
       trend: null
     }
   ];
-
-  const getColorClasses = (color) => {
-    const colors = {
-      blue: "from-blue-500 to-blue-600 shadow-blue-200",
-      green: "from-green-500 to-green-600 shadow-green-200",
-      purple: "from-purple-500 to-purple-600 shadow-purple-200",
-      orange: "from-orange-500 to-orange-600 shadow-orange-200",
-      red: "from-red-500 to-red-600 shadow-red-200",
-      indigo: "from-indigo-500 to-indigo-600 shadow-indigo-200"
-    };
-    return colors[color] || colors.blue;
-  };
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">

@@ -1,60 +1,29 @@
-import React, { useState, useEffect } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { api } from '../api/axios';
-import { useForm, Controller } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { Button } from '../components/ui/button';
-import { Input } from '../components/ui/input';
-import { CurrencyInput } from '../components/ui/CurrencyInput';
-import { Label } from '../components/ui/label';
-import { Badge } from '../components/ui/badge';
-import { Textarea } from '../components/ui/textarea';
-import { Tooltip } from '../components/ui/tooltip';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../components/ui/select';
-import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '../components/ui/tabs';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../components/ui/table';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '../components/ui/dialog';
-import { Plus, FileText, Trash2, Search, Filter, Users, Pencil } from 'lucide-react';
+import React, { useState } from 'react';
+import { useQuery, useMutation, useQueryClient, keepPreviousData } from '@tanstack/react-query';
+import { api } from '@/api/axios';
+import { Tooltip } from '@/components/ui/tooltip';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Plus, FileText, Trash2, Search, Filter, Users, Pencil, Eye } from 'lucide-react';
 import { getSLALabel, getSLAColor, getSLABgColor, calculateSLAStatus, formatRupiah, formatDate } from '@/utils/formatters';
-import { transactionSchema } from "@/utils/validations";
+import ViewTransactionDialog from '@/components/dialogs/ViewTransactionDialog';
+import AddEditTransactionDialog from '@/components/dialogs/AddEditTransactionDialog';
 
 const Transactions = () => {
   const queryClient = useQueryClient();
   const [showDialog, setShowDialog] = useState(false);
+  const [showViewDialog, setShowViewDialog] = useState(false);
   const [editingTransaction, setEditingTransaction] = useState(null);
+  const [viewingTransaction, setViewingTransaction] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterProject, setFilterProject] = useState('all');
   const [filterCostType, setFilterCostType] = useState('all');
-  const [uploadingFile, setUploadingFile] = useState(false);
-
-  const initialData = {
-    project_id: '',
-    tanggal_transaksi: '',
-    tanggal_po_tagihan: '',
-    cost_type_id: '',
-    deskripsi_realisasi: '',
-    jumlah_tenaga_kerja: '',
-    bukti_transaksi_url: ''
-  }
-
-  // --- React Hook Form Setup ---
-  const { register, control, handleSubmit, formState: { errors }, reset } = useForm({
-    resolver: zodResolver(transactionSchema),
-    defaultValues: editingTransaction || initialData
-  });
-
-  useEffect(() => {
-    if (editingTransaction) {
-      const formattedData = {
-        ...editingTransaction,
-        tanggal_transaksi: editingTransaction.tanggal_transaksi ? editingTransaction.tanggal_transaksi.split('T')[0] : '',
-        tanggal_po_tagihan: editingTransaction.tanggal_po_tagihan ? editingTransaction.tanggal_po_tagihan.split('T')[0] : '',
-      };
-
-      reset(formattedData);
-    }
-  }, [editingTransaction, reset]);
 
   const { data: projectsData = { projects: [] } } = useQuery({
     queryKey: ['projects'],
@@ -65,11 +34,19 @@ const Transactions = () => {
   });
 
   const { data: transactionsData = { transactions: [] }, isLoading } = useQuery({
-    queryKey: ['transactions'],
+    queryKey: ['transactions', searchTerm, filterProject, filterCostType],
     queryFn: async () => {
-      const response = await api.get('/transactions');
+      const response = await api.get('/transactions', {
+        params: {
+          search: searchTerm,
+          project_id: filterProject === "all" ? null : filterProject,
+          cost_stype_id: filterCostType === "all" ? null : filterCostType,
+        },
+      });
       return response.data;
-    }
+    },
+    enabled: searchTerm.length === 0 || searchTerm.length >= 3,
+    placeholderData: keepPreviousData,
   });
 
   const { data: costTypesData = { cost_types: [] } } = useQuery({
@@ -80,29 +57,23 @@ const Transactions = () => {
     }
   });
 
-  const createMutation = useMutation({
-    mutationFn: async (data) => {
-      const response = await api.post('/transactions', data);
-      return response.data;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries(['transactions']);
-      setShowDialog(false);
-      resetForm();
-    }
-  });
+  const handleEdit = (transaction) => {
+    setEditingTransaction(transaction);
+    setShowDialog(true);
+  };
 
-  const updateMutation = useMutation({
-    mutationFn: async ({ id, data }) => {
-      const response = await api.put(`/transactions/${id}`, data);
-      return response.data;
-    },
-    onSuccess: () => {
+  const handleViewTransaction = (transaction) => {
+    setViewingTransaction(transaction);
+    setShowViewDialog(true);
+  };
+
+  const finishSubmit = (isQuery=true) => {
+    if(isQuery) {
       queryClient.invalidateQueries(['transactions']);
-      setShowDialog(false);
-      resetForm();
     }
-  });
+    setShowDialog(false);
+    setEditingTransaction(null);
+  };
 
   const deleteMutation = useMutation({
     mutationFn: async (id) => {
@@ -113,39 +84,8 @@ const Transactions = () => {
     }
   });
 
-  const resetForm = () => {
-    reset(initialData);
-    setEditingTransaction(null);
-  };
-
-  const handleEdit = (transaction) => {
-    setEditingTransaction(transaction);
-    setShowDialog(true);
-  };
-
-  const onHandleSubmit = async (data) => {
-    if (editingTransaction) {
-      updateMutation.mutate({ id: editingTransaction.id, data });
-    } else {
-      createMutation.mutate(data);
-    }
-  };
-
-  const filteredTransactions = transactionsData.transactions.filter(tx => {
-    const project = projectsData.projects.find(p => p.id === tx.project_id);
-    const matchSearch = tx.deskripsi_realisasi?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      tx.jenis_biaya_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      project?.judul_pekerjaan?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      project?.no_sp2k?.toLowerCase().includes(searchTerm.toLowerCase());
-
-    const matchProject = filterProject === "all" || tx.project_id === filterProject;
-    const matchCostType = filterCostType === "all" || tx.cost_type_id === filterCostType;
-
-    return matchSearch && matchProject && matchCostType;
-  });
-
-  const totalRealisasi = filteredTransactions.reduce((sum, tx) => sum + (tx.jumlah_realisasi || 0), 0);
-  const totalManFee = filteredTransactions.reduce((sum, tx) => sum + (tx.nilai_management_fee || 0), 0);
+  const totalRealisasi = transactionsData.transactions.reduce((sum, tx) => sum + (tx.jumlah_realisasi || 0), 0);
+  const totalManFee = transactionsData.transactions.reduce((sum, tx) => sum + (tx.nilai_management_fee || 0), 0);
 
   return (
     <div className="p-4 md:p-8 bg-gradient-to-br from-slate-50 to-slate-100 min-h-screen">
@@ -157,7 +97,6 @@ const Transactions = () => {
           </div>
           <Button
             onClick={() => {
-              resetForm();
               setShowDialog(true);
             }}
             className="bg-green-600 hover:bg-green-700 shadow-lg"
@@ -191,7 +130,7 @@ const Transactions = () => {
             <CardContent className="pt-6">
               <p className="text-sm text-slate-600 mb-1">Total Transaksi</p>
               <p className="text-2xl font-bold text-slate-900">
-                {filteredTransactions.length}
+                {transactionsData.transactions.length}
               </p>
             </CardContent>
           </Card>
@@ -257,7 +196,7 @@ const Transactions = () => {
           <CardContent className="pt-6">
             {isLoading ? (
               <div className="text-center py-8">Loading...</div>
-            ) : filteredTransactions.length === 0 ? (
+            ) : transactionsData.transactions.length === 0 ? (
               <div className="text-center py-8 text-slate-500">
                 Belum ada transaksi
               </div>
@@ -268,15 +207,15 @@ const Transactions = () => {
                     <TableRow>
                       <TableHead>Tanggal</TableHead>
                       <TableHead>Proyek</TableHead>
-                      <TableHead>Jenis Biaya</TableHead>
+                      <TableHead className="text-center">Jenis Biaya</TableHead>
                       <TableHead>Deskripsi</TableHead>
                       <TableHead className="text-start">Realisasi</TableHead>
                       <TableHead className="text-center">SLA</TableHead>
-                      <TableHead className="w-24">Aksi</TableHead>
+                      <TableHead className="text-center w-24">Aksi</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {filteredTransactions.map((tx) => {
+                    {transactionsData.transactions.map((tx) => {
                       const slaStatus = calculateSLAStatus(tx.tanggal_po_tagihan, tx.tanggal_transaksi);
 
                       return (
@@ -320,6 +259,15 @@ const Transactions = () => {
                               <Button
                                 variant="ghost"
                                 size="icon"
+                                onClick={() => handleViewTransaction(tx)}
+                                className="text-indigo-500 hover:text-indigo-700"
+                                title="Lihat Detail"
+                              >
+                                <Eye className="w-4 h-4" />
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="icon"
                                 onClick={() => handleEdit(tx)}
                               >
                                 <Pencil className="w-4 h-4" />
@@ -349,136 +297,27 @@ const Transactions = () => {
         </Card>
       </div>
 
+      {/* View Transaction Dialog */}
+      <ViewTransactionDialog
+          isOpen={showViewDialog}
+          onClose={() => {
+            setShowViewDialog(false);
+            setViewingTransaction(null);
+          }}
+          transaction={viewingTransaction}
+          onEdit={() => {
+            setShowDialog(false);
+            handleEdit(viewingTransaction);
+          }}
+        />
+
       {/* Transaction Form Dialog */}
-      <Dialog open={showDialog} onOpenChange={setShowDialog}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>
-              {editingTransaction ? 'Edit Transaksi' : 'Tambah Transaksi Baru'}
-            </DialogTitle>
-          </DialogHeader>
-          <form onSubmit={handleSubmit(onHandleSubmit)}>
-            <div className="grid gap-4 py-4">
-              <div className="space-y-2">
-                <Label htmlFor="project_id">Proyek *</Label>
-                {/* Use the Controller for your custom Select component */}
-                <Controller
-                  name="project_id"
-                  control={control}
-                  render={({ field: { onChange, value } }) => (
-                    // The render prop passes the necessary onChange and value handlers
-                    <Select
-                      value={value}
-                      onValueChange={onChange}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Pilih proyek" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {projectsData.projects.map((project) => (
-                          <SelectItem key={project.id} value={project.id}>
-                            <span className="font-medium">{project.judul_pekerjaan}</span> <span className="font-medium text-blue-500 ms-2">[Fee: {project.tarif_management_fee_persen}%]</span>
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    )}
-                  />
-                  {errors.project_id && <p className="text-red-500 text-sm">{errors.project_id.message}</p>}
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="tanggal_po_tagihan">Tanggal PO/Tagihan</Label>
-                  <Input
-                    id="tanggal_po_tagihan"
-                    type="date"
-                    {...register("tanggal_po_tagihan")}
-                  />
-                  {errors.tanggal_po_tagihan && <p className="text-red-500 text-sm">{errors.tanggal_po_tagihan.message}</p>}
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="tanggal_transaksi">Tanggal Transaksi *</Label>
-                  <Input
-                    id="tanggal_transaksi"
-                    type="date"
-                    {...register("tanggal_transaksi")}
-                  />
-                  {errors.tanggal_transaksi && <p className="text-red-500 text-sm">{errors.tanggal_transaksi.message}</p>}
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="cost_type_id">Jenis Biaya *</Label>
-                <Controller
-                  name="cost_type_id"
-                  control={control}
-                  render={({ field: { onChange, value } }) => (
-                    <Select
-                      value={value}
-                      onValueChange={onChange}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Pilih jenis biaya" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {costTypesData.cost_types.map((ct) => (
-                          <SelectItem key={ct.id} value={ct.id}>
-                            <span className="font-medium">{ct.kode}</span> - {ct.nama_biaya}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  )}
-                />
-                {errors.cost_type_id && <p className="text-red-500 text-sm">{errors.cost_type_id.message}</p>}
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="deskripsi_realisasi">Deskripsi *</Label>
-                <Textarea
-                  id="deskripsi_realisasi"
-                  rows={3}
-                  {...register("deskripsi_realisasi")}
-                />
-                {errors.deskripsi_realisasi && <p className="text-red-500 text-sm">{errors.deskripsi_realisasi.message}</p>}
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="jumlah_realisasi">Jumlah Realisasi (Rp) *</Label>
-                <CurrencyInput
-                  name="jumlah_realisasi"
-                  control={control}
-                />
-                {errors.jumlah_realisasi && <p className="text-red-500 text-sm">{errors.jumlah_realisasi.message}</p>}
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="jumlah_tenaga_kerja">Jumlah Tenaga Kerja</Label>
-                <Input
-                  id="jumlah_tenaga_kerja"
-                  type="number"
-                  {...register("jumlah_tenaga_kerja")}
-                />
-                {errors.jumlah_tenaga_kerja && <p className="text-red-500 text-sm">{errors.jumlah_tenaga_kerja.message}</p>}
-              </div>
-            </div>
-            <DialogFooter>
-              <Button type="button" variant="outline" onClick={() => setShowDialog(false)}>
-                Batal
-              </Button>
-              <Button
-                type="submit"
-                disabled={createMutation.isPending || updateMutation.isPending}
-                className="bg-green-600 hover:bg-green-700"
-              >
-                {(createMutation.isPending || updateMutation.isPending) ? 'Menyimpan...' : 'Simpan'}
-              </Button>
-            </DialogFooter>
-          </form>
-        </DialogContent>
-      </Dialog>
+      <AddEditTransactionDialog
+        isOpen={showDialog}
+        onClose={() => finishSubmit(false)}
+        transaction={editingTransaction}
+        onFinish={finishSubmit}
+        />
     </div>
   );
 };
